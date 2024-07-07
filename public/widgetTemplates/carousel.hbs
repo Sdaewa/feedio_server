@@ -1,0 +1,25 @@
+<div class="content-wrapper">
+<div class="wrapper-for-arrows" style="background-color: {{background}}; color: {{text}};" data-auto-scroll="{{autoScroll}}">
+    {{#each reviewsData}}
+      <div class="review-wrap item" >
+        <div
+          class="imgDiv"></div>
+        <div class="personName">{{this.name}}</div>
+        <div class="description">{{this.content}}</div>
+        <div class="review-footer">
+        <span class="stars" data-rating="{{this.rating}}"></span>
+        {{#unless ../hideDate}}
+          <span class="review-date">{{this.createdAt}}</span>
+        {{/unless}}
+      </div>
+      </div>
+    {{/each}}
+    <div class="left-arrow-wrap arrow-wrap">
+      <div class="arrow" id="leftArrow"></div>
+    </div>
+    <div class="right-arrow-wrap arrow-wrap">
+      <div class="arrow" id="rightArrow"></div>
+    </div>
+  </div>
+</div>
+

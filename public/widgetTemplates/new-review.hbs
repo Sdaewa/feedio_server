@@ -1,0 +1,30 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Review Notification</title>
+    <style></style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        New Review Submitted!
+      </div>
+      <div class="content">
+        <p>Hello Admin,</p>
+        <p>You've received a new review from
+          <strong>{{reviewerName}}</strong>
+          (<em>{{reviewerEmail}}</em>).</p>
+        <div class="review-details">
+          <p><strong>Review Content:</strong> {{reviewContent}}</p>
+          <p><strong>Rating:</strong> {{reviewRating}} out of 5</p>
+        </div>
+        <p>Make sure to check it out and manage accordingly.</p>
+      </div>
+      <div class="footer">
+        This is an auto-generated email, please do not reply directly to this
+        email.
+      </div>
+    </div>
+  </body>
+</html>

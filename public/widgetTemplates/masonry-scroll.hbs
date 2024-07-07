@@ -1,0 +1,26 @@
+<div class="widget masonry_scroll" data-scroll-speed="{{scrollSpeed}}" style="--background-color: {{background}}; --text-color: {{text}}">
+  {{#each reviewsData}}
+    <div class="review-item">
+      <div class="avatar-container">
+        <div class="avatar-placeholder"></div>
+        <span class="reviewer-name">{{this.name}}</span>
+        <p class="review-content">{{this.content}}</p>
+      </div>
+      <div class="review-footer">
+        <div class="stars" data-rating="{{this.rating}}"></div>
+        {{#if ../hideDate}}
+        {{else}}
+          <span class="review-date">{{this.createdAt}}</span>
+        {{/if}}
+      </div>
+    </div>
+  {{/each}}
+</div>
+
+
+
+
+
+
+
+

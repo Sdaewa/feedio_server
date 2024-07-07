@@ -1,0 +1,43 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Update - Feedio</title>
+    <style></style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        Account Update - Feedio
+      </div>
+      <div class="content">
+        <p>Hi <strong>{{name}}</strong>,</p>
+        <p>We're writing to inform you that your Feedio account details have
+          recently been updated. Here's an overview:</p>
+        <div class="details-box">
+          <p><strong>Email:</strong> {{email}}</p>
+          {{#if passwordUpdated}}
+            <p><strong>Password:</strong>
+              Your password has been updated successfully.</p>
+          {{/if}}
+        </div>
+        <p>If you did not request these changes or believe this may be an error,
+          please contact our
+          <a href="mailto:support@feedio.com">support team</a>
+          immediately for assistance.</p>
+        <a href="https://feedio.com/login" class="cta-button">Login to Feedio</a>
+        <br />
+        <p>Stay safe,</p>
+        <p>The Feedio Team</p>
+      </div>
+      <div class="footer">
+        This is an automated email. If you believe this to be an error, please
+        contact our support.
+        <br />
+        ©
+        {{currentYear}}
+        Feedio, All Rights Reserved.
+      </div>
+    </div>
+  </body>
+</html>

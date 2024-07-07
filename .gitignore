@@ -1,0 +1,7 @@
+**/node_modules/
+**/.env
+**/dbSeeder.js
+**/google-services.json
+**/images/
+node_modules/
+.vercel

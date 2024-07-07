@@ -1,0 +1,63 @@
+.widget.average_card {
+  font-family: Arial, sans-serif;
+  width: 50%;
+  max-width: 300px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: var(--background-color, #fff);
+  color: var(--text-color, #777);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.widget.average_card .fa {
+  font-size: 25px;
+  color: #ffcc00;
+}
+
+.stars {
+  display: inline-block;
+  font-size: 30px;
+  height: 1em;
+  color: gold;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.stars[data-rating="1"]:before {
+  content: "★";
+}
+.stars[data-rating="2"]:before {
+  content: "★★";
+}
+.stars[data-rating="3"]:before {
+  content: "★★★";
+}
+.stars[data-rating="4"]:before {
+  content: "★★★★";
+}
+.stars[data-rating="5"]:before {
+  content: "★★★★★";
+}
+
+.widget.average_card .fa.checked {
+  color: orange;
+}
+
+.widget.average_card p {
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .widget.average_card {
+    width: 80%;
+  }
+}
+
+@media (max-width: 480px) {
+  .widget.average_card {
+    width: 100%;
+  }
+}

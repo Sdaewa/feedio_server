@@ -1,0 +1,69 @@
+<div class="feedback-container">
+  <div class="content-container">
+    <div class="product-info">
+      {{!-- <img src="{{logoSrc}}" alt="Product Logo" class="product-logo" /> --}}
+      <h1 class="product-name">{{productData.name}}</h1>
+      <p class="product-header">{{productData.header}}</p>
+      <div class="product-questions">
+        <hr />
+        <ul>
+          {{#each productData.questions}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+
+    <form class="feedback-form">
+      <input type="hidden" name="productId" value="{{productId}}" />
+      <div class="input-field">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+      <div class="input-field">
+        <label for="email">Your Email</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      <div class="input-field">
+        <label for="review">Your Review</label>
+        <textarea id="review" name="content" rows="4" required></textarea>
+      </div>
+      <div class="input-field rating">
+        <div class="rating">
+          {{#each (range 0 5)}}
+            <span class="star">
+              <input
+                type="radio"
+                id="rating-{{this}}"
+                name="rating"
+                value="{{this}}"
+              />
+              <label for="rating-{{this}}">★</label>
+            </span>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="nps-score">
+        <label>
+          On a scale of 0-10, how likely are you to recommend our
+          product/service to a friend or colleague?</label>
+        <div class="nps-score-options">
+          {{#each (range 0 11)}}
+            <label class="nps-option">
+              {{this}}
+
+              <input
+                type="radio"
+                name="npsScore"
+                value="{{this}}"
+                id="nps-{{this}}"
+              />
+            </label>
+          {{/each}}
+        </div>
+      </div>
+      <button type="submit" class="submit-btn">Submit Review</button>
+    </form>
+  </div>
+</div>
