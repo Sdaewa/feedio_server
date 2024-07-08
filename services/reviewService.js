@@ -12,7 +12,7 @@ const stopWords = require("../utils/stopWords");
 const tokenizer = new natural.WordTokenizer();
 
 const client = new LanguageServiceClient({
-  keyFilename: path.join(__dirname, "../../google-services.json"),
+  keyFilename: path.join(__dirname, "../google-services.json"),
 });
 
 async function analyzeReviewContent(feedback) {
