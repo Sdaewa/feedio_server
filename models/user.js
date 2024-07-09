@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  company: { type: String },
+  termsAndConditions: { type: Boolean, default: false, required: true },
   notifyReview: { type: Boolean, default: false },
   notifyAccount: { type: Boolean, default: false },
   membershipStatus: { type: String, default: "free" },
