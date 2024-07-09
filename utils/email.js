@@ -53,8 +53,9 @@ async function sendAdminNotificationEmail(review) {
     const replacements = {
       reviewerName: review.name,
       reviewerEmail: review.email,
-      reviewContent: review.content,
+      reviewContent: review.feedback,
       reviewRating: review.rating,
+      currentYear: new Date().getFullYear(),
     };
     const htmlToSend = template(replacements);
     await sendEmail({
