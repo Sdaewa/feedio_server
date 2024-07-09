@@ -7,7 +7,7 @@ const { Review } = require("../models/review");
 const Product = require("../models/Product");
 const { calculateNetPromoterScore } = require("../utils/nps");
 const stopWords = require("../utils/stopWords");
-// const { sendEmail, sendAdminNotificationEmail } = require("../utils/email");
+const { sendEmail, sendAdminNotificationEmail } = require("../utils/email");
 
 const tokenizer = new natural.WordTokenizer();
 
@@ -158,16 +158,17 @@ const create = async ({
   await recalculateAndUpdateRatingDistribution(productId);
   await product.save();
 
-  // if (user.notifyReview) {
-  //   sendAdminNotificationEmail({
-  //     name: name,
-  //     email: email,
-  //     feedback: feedback,
-  //     rating: rating,
-  //     productName: product.name,
-  //     userEmail: user.email,
-  //   });
-  // }
+  if (user.notifyReview) {
+    sendAdminNotificationEmail({
+      name: name,
+      email: email,
+      feedback: feedback,
+      rating: rating,
+      productName: product.name,
+      npsScore: npsScore,
+      userEmail: user.email,
+    });
+  }
 
   return newReview;
 };
@@ -203,17 +204,18 @@ const widgetReview = async ({ name, email, feedback, rating, productId }) => {
   await newReview.save();
 
   product.reviews.push(newReview._id);
-  await recalculateAndUpdateNps(productId); // Ensure NPS is recalculated
+  await recalculateAndUpdateNps(productId);
+  await recalculateAndUpdateRatingDistribution(productId);
   await product.save();
 
-  // sendEmail({
-  //   to: user.email,
-  //   subject: "New Review Added from Widget",
-  //   html: `<h1>New Review for ${product.name} from Widget</h1>
-  //          <p>${name} has added a review for ${product.name} using the widget.</p>
-  //          <p>Rating: ${rating}</p>
-  //          <p>Review: ${feedback}</p>`,
-  // });
+  sendEmail({
+    to: user.email,
+    subject: "New Review Added from Widget",
+    html: `<h1>New Review for ${product.name} from Widget</h1>
+           <p>${name} has added a review for ${product.name} using the widget.</p>
+           <p>Rating: ${rating}</p>
+           <p>Review: ${feedback}</p>`,
+  });
 
   return newReview;
 };
@@ -286,7 +288,7 @@ const generateWordFrequencies = async (productId) => {
           !stopWords.includes(lowerToken) &&
           lowerToken.length >= minWordLength &&
           lowerToken.length <= maxWordLength &&
-          !/^\d+$/.test(lowerToken) // Exclude numbers
+          !/^\d+$/.test(lowerToken)
         ) {
           wordCounts[lowerToken] = (wordCounts[lowerToken] || 0) + 1;
         }

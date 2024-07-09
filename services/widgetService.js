@@ -262,11 +262,3 @@ module.exports = {
   generateWidgetRepresentation,
   deleteWidget,
 };
-
-module.exports = {
-  generateWidgetConfig,
-  getWidgets,
-  getWidgetConfig,
-  generateWidgetRepresentation,
-  deleteWidget,
-};
