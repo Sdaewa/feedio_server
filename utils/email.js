@@ -6,8 +6,10 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
+let transporter = nodemailer.createTransport({
+  host: "mail.privateemail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USERNAME,
     pass: process.env.EMAIL_PASSWORD,
@@ -35,7 +37,7 @@ async function sendAdminNotificationEmail(review) {
   try {
     const templatePath = path.join(
       __dirname,
-      "../public/templates/new-review.hbs"
+      "../public/emailTemplates/new-review.hbs"
     );
     const cssPath = path.join(__dirname, "../public/styles/new-review.css");
 
@@ -69,7 +71,7 @@ async function sendAccountCreationEmail(user) {
   try {
     const templatePath = path.join(
       __dirname,
-      "../public/templates/welcome-email.hbs"
+      "../public/emailTemplates/welcome-email.hbs"
     );
     const cssPath = path.join(__dirname, "../public/styles/welcome-email.css");
 
@@ -104,7 +106,7 @@ async function sendAccountUpdateEmail(
 ) {
   const templatePath = path.join(
     __dirname,
-    "../public/templates/update-email.hbs"
+    "../public/emailTemplates/update-email.hbs"
   );
   const cssPath = path.join(__dirname, "../public/styles/update-email.css");
 

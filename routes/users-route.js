@@ -54,6 +54,6 @@ router.post(
   userController.resetPassword
 );
 
-router.delete("/:id", userController.resetPassword);
+router.delete("/:id", userController.deleteUser);
 
 module.exports = router;
