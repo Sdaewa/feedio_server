@@ -99,7 +99,7 @@ const generateWidgetRepresentation = async (
 
   const reviewsData = reviews.map((review) => ({
     name: review.name,
-    content: review.content,
+    content: review.feedback,
     rating: review.rating,
     createdAt: new Date(review.createdAt).toDateString(),
   }));
