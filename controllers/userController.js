@@ -3,7 +3,7 @@ const { validationResult } = require("express-validator");
 const userService = require("../services/userService");
 
 exports.registerUser = async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, company, termsAccepted } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -11,7 +11,13 @@ exports.registerUser = async (req, res, next) => {
   }
 
   try {
-    const user = await userService.register({ name, email, password });
+    const user = await userService.register({
+      name,
+      email,
+      password,
+      company,
+      termsAccepted,
+    });
     res.status(201).json(user);
   } catch (error) {
     console.log(error);
