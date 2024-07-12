@@ -67,37 +67,17 @@ body {
   border-radius: 50%;
   width: calc(6rem + 4vmin);
   height: calc(6rem + 4vmin);
-  background-color: #ccc;
-  background-size: cover;
-  background-position: center;
   margin-bottom: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
 }
 
-.review-wrap .imgDiv::before {
-  content: "";
-  display: block;
-  background-color: #666;
-  width: 50%;
-  height: 50%;
-  border-radius: 50%;
-}
-
-.review-wrap .imgDiv::after {
-  content: "";
-  display: block;
-  background-color: #666;
-  width: 60%;
-  height: 30%;
-  position: absolute;
-  bottom: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 50px 50px 0 0;
+.review-wrap .imgDiv img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .review-wrap .personName {

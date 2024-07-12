@@ -2,8 +2,9 @@
 <div class="wrapper-for-arrows" style="background-color: {{background}}; color: {{text}};" data-auto-scroll="{{autoScroll}}">
     {{#each reviewsData}}
       <div class="review-wrap item" >
-        <div
-          class="imgDiv"></div>
+        <div class="imgDiv">
+          <img src="https://ui-avatars.com/api/?name={{this.name}}&background=random&color=fff" alt="{{this.name}}'s avatar">
+        </div>
         <div class="personName">{{this.name}}</div>
         <div class="description">{{this.content}}</div>
         <div class="review-footer">
@@ -22,4 +23,3 @@
     </div>
   </div>
 </div>
-
