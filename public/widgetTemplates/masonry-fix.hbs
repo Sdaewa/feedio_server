@@ -1,25 +1,17 @@
-<div class="widget masonry_fix">
+<div class="widget masonry_fix" style="--background-color: {{background}}; --text-color: {{text}}">
   {{#each reviewsData}}
     <div class="review-item">
       <div class="avatar-container">
-        <div class="avatar-placeholder"></div>
+        <img class="avatar" src="https://ui-avatars.com/api/?name={{this.name}}&background=random&color=fff" alt="{{this.name}}'s avatar">
         <span class="reviewer-name">{{this.name}}</span>
-        <p class="review-content">{{this.content}}</p>
       </div>
+      <p class="review-content">{{this.content}}</p>
       <div class="review-footer">
         <span class="stars" data-rating="{{this.rating}}"></span>
-        {{#if ../hideDate}}
-        {{else}}
+        {{#unless ../hideDate}}
           <span class="review-date">{{this.createdAt}}</span>
-        {{/if}}
+        {{/unless}}
       </div>
     </div>
   {{/each}}
 </div>
-
-
-
-
-
-
-

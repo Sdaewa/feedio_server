@@ -12,11 +12,14 @@ body {
   max-height: 600px;
   width: 80%;
   margin: 20px auto;
+  background-color: var(--background-color);
+  color: var(--text-color, #000000);
 }
 
 .review-item {
   flex: 1 1 calc(25% - 40px);
-  background-color: #fff;
+  background-color: var(--background-color);
+  color: var(--text-color, #000000);
   margin: 20px;
   padding: 20px;
   border-radius: 8px;
@@ -34,40 +37,11 @@ body {
   margin-bottom: 10px;
 }
 
-.avatar-placeholder {
-  background-color: #ccc;
-  border-radius: 50%;
+.avatar {
   width: 50px;
   height: 50px;
-  margin-bottom: 10px;
-  display: inline-block;
-  position: relative;
-}
-
-.avatar-placeholder::before {
-  content: "";
-  display: block;
-  background-color: #666;
-  width: 24px;
-  height: 24px;
   border-radius: 50%;
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.avatar-placeholder::after {
-  content: "";
-  display: block;
-  background-color: #666;
-  width: 30px;
-  height: 12px;
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 15px 15px 0 0;
+  margin-bottom: 10px;
 }
 
 .review-content {
