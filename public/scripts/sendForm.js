@@ -1,110 +1,99 @@
-function showFeedbackForm() {
-  document.getElementById("feedbackModal").style.display = "block";
-  document.getElementById("review-dialog").style.display = "block";
-}
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("feedback-form");
+  const stars = document.querySelectorAll(".star");
+  const npsOptions = document.querySelectorAll(
+    '.nps-option input[type="radio"]'
+  );
+  const feedbackTextarea = document.getElementById("feedback");
+  const charCount = document.querySelector(".char-count");
+  const submitBtn = document.querySelector(".submit-btn");
 
-function hideFeedbackForm() {
-  document.getElementById("feedbackModal").style.display = "none";
-  document.getElementById("review-dialog").style.display = "none";
-}
+  // Star rating
+  stars.forEach((star) => {
+    star.addEventListener("click", function () {
+      const value = this.getAttribute("data-value");
+      stars.forEach((s) => s.classList.remove("active"));
+      for (let i = 0; i < value; i++) {
+        stars[i].classList.add("active");
+      }
+    });
+  });
 
-document
-  .getElementById("feedback-form")
-  .addEventListener("submit", function (e) {
+  // NPS score
+  npsOptions.forEach((option) => {
+    option.addEventListener("change", function () {
+      npsOptions.forEach((opt) =>
+        opt.nextElementSibling.classList.remove("active")
+      );
+      this.nextElementSibling.classList.add("active");
+    });
+  });
+
+  // Character count
+  feedbackTextarea.addEventListener("input", function () {
+    const length = this.value.length;
+    charCount.textContent = `${length}/100 characters`;
+  });
+
+  form.addEventListener("submit", function (e) {
     e.preventDefault();
-  });
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
 
-document
-  .getElementById("feedbackModal")
-  .addEventListener("click", function (e) {
-    if (e.target === e.currentTarget) {
-      hideFeedbackForm();
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const feedback = feedbackTextarea.value;
+    const rating = document.querySelectorAll(".star.active").length;
+    const npsScore = document.querySelector(
+      'input[name="npsScore"]:checked'
+    )?.value;
+    const productId = document.querySelector('input[name="productId"]').value;
+
+    if (feedback.length < 100) {
+      alert("Feedback must be at least 100 characters long.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Feedback";
+      return;
     }
-  });
 
-document.getElementById("cancel-btn").addEventListener("click", function (e) {
-  hideFeedbackForm();
-});
+    const data = {
+      name,
+      email,
+      feedback,
+      rating,
+      npsScore: parseInt(npsScore),
+      productId,
+    };
 
-document.getElementById("nps-score").addEventListener("input", function () {
-  const npsScoreValue = document.getElementById("nps-score").value;
-  document.getElementById("nps-score-value").textContent = npsScoreValue;
-});
-
-document.getElementById("submit-btn").addEventListener("click", function (e) {
-  console.log(e);
-  e.preventDefault();
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const content = document.getElementById("review").value;
-  const rating = document.querySelector('input[name="rating"]:checked').value;
-  const npsScore = document.getElementById("nps-score").value;
-
-  const data = JSON.stringify({
-    name,
-    email,
-    content,
-    rating: parseFloat(rating),
-    npsScore: parseInt(npsScore),
-    productId,
-  });
-
-  fetch(
-    `${process.env.SERVER_URL}/api/collection-feedback/createReviewForWidget`,
-    {
+    fetch("/api/collection-feedback/create-review-for-widget", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: data,
-    }
-  )
-    .then((response) => {
-      return response.text().then((text) => {
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
         if (!response.ok) {
-          throw new Error(text || "Network response was not ok");
+          return response.text().then((text) => Promise.reject(text));
         }
-        return JSON.parse(text);
+        return response.json();
+      })
+      .then((data) => {
+        alert("Thank you for your feedback!");
+        form.reset();
+        stars.forEach((s) => s.classList.remove("active"));
+        npsOptions.forEach((opt) =>
+          opt.nextElementSibling.classList.remove("active")
+        );
+        charCount.textContent = "0/100 characters";
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("There was an error submitting your feedback. Please try again.");
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Feedback";
       });
-    })
-    .then((data) => {
-      hideFeedbackForm();
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-});
-
-document.querySelectorAll(".star").forEach((star, index) => {
-  star.addEventListener("mouseover", function () {
-    highlightStars(index);
-  });
-
-  star.addEventListener("mouseout", function () {
-    resetStars();
-  });
-
-  star.addEventListener("click", function () {
-    setSelectedStar(index);
   });
 });
-
-function highlightStars(index) {
-  document.querySelectorAll(".star label").forEach((label, idx) => {
-    label.style.color = idx <= index ? "gold" : "#e0e0e0";
-  });
-}
-
-function resetStars() {
-  const checkedIndex = document.querySelector('input[name="rating"]:checked')
-    ? parseInt(document.querySelector('input[name="rating"]:checked').value)
-    : -1;
-  document.querySelectorAll(".star label").forEach((label, idx) => {
-    label.style.color = idx <= checkedIndex ? "gold" : "#e0e0e0";
-  });
-}
-
-function setSelectedStar(index) {
-  document.querySelectorAll('input[name="rating"]')[index].checked = true;
-  highlightStars(index);
-}

@@ -63,7 +63,19 @@ app.use("/api/users/:id/payments", paymentRoutes);
 
 app.use("/api/payments/", paymentController.handleStripeWebhook);
 
-app.use("/api/collection-feedback", reviewRoutes);
+app.use((req, res, next) => {
+  console.log(`Received ${req.method} request to ${req.url}`);
+  next();
+});
+
+app.use(
+  "/api/collection-feedback",
+  (req, res, next) => {
+    console.log("Entering /api/collection-feedback route");
+    next();
+  },
+  reviewRoutes
+);
 
 mongoose
   .connect(process.env.MONGODB_URI, {

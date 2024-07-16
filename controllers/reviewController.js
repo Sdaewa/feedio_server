@@ -33,10 +33,11 @@ exports.createReview = async (req, res) => {
 };
 
 exports.createReviewForWidget = async (req, res) => {
-  const { name, email, feedback, rating, productId } = req.body;
+  const { name, email, feedback, rating, productId, npsScore } = req.body;
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
+    console.log("Validation errors:", errors.array());
     return res.status(422).json({ errors: errors.array() });
   }
 
@@ -47,12 +48,14 @@ exports.createReviewForWidget = async (req, res) => {
       feedback,
       rating,
       productId,
+      npsScore,
     });
+    console.log("Review created successfully:", newReview);
     res
       .status(201)
       .json({ message: "Review created successfully", review: newReview });
   } catch (error) {
-    console.log(error);
+    console.error("Error creating review:", error);
     return res
       .status(500)
       .json({ message: "Something went wrong", error: error.message });

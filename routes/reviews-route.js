@@ -5,14 +5,25 @@ const reviewController = require("../controllers/reviewController");
 
 const router = express.Router();
 
+router.use((req, res, next) => {
+  console.log("Request reached reviews-route.js");
+  next();
+});
+
 router.post(
   "/create-review-for-widget",
+  (req, res, next) => {
+    console.log("Received request to create-review-for-widget");
+    console.log("Request body:", req.body);
+    next();
+  },
   [
     check("name").not().isEmpty().withMessage("Name is required"),
     check("email").isEmail().withMessage("Please enter a valid email"),
     check("feedback").not().isEmpty().withMessage("Feedback is required"),
     check("rating").isNumeric().withMessage("Rating must be a number"),
     check("productId").not().isEmpty().withMessage("Product ID is required"),
+    check("npsScore").isNumeric().withMessage("NPS Score must be a number"),
   ],
   reviewController.createReviewForWidget
 );

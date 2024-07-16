@@ -173,7 +173,14 @@ const create = async ({
   return newReview;
 };
 
-const widgetReview = async ({ name, email, feedback, rating, productId }) => {
+const widgetReview = async ({
+  name,
+  email,
+  feedback,
+  rating,
+  productId,
+  npsScore,
+}) => {
   const product = await Product.findById(productId);
   if (!product) {
     throw new Error("Product not found");

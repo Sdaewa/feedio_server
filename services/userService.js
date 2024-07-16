@@ -20,7 +20,6 @@ const register = async ({ name, email, password, company, termsAccepted }) => {
   if (existingUser) {
     throw new Error("User already exists");
   }
-  console.log(termsAccepted);
   const hashedPassword = await bcrypt.hash(password, 12);
   const newUser = new User({
     name,
