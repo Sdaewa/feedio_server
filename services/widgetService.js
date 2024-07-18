@@ -230,8 +230,6 @@ const generateWidgetRepresentation = async (
   }
 
   return widgetRepresentation;
-
-  return widgetRepresentation;
 };
 
 const deleteWidget = async (widgetId) => {

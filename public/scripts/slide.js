@@ -6,8 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentReviewIndex = 0;
   let autoSlideInterval;
 
-  const autoScroll = wrapperForArrows.dataset.autoScroll === "true";
-
   const updateReviewDisplay = () => {
     reviewWraps.forEach((wrap, index) => {
       wrap.style.display = index === currentReviewIndex ? "flex" : "none";
