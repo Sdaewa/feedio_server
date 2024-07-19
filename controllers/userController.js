@@ -46,8 +46,21 @@ exports.getUserById = async (req, res) => {
   const { id } = req.params;
 
   try {
+    await userService.updateUserMembershipStatus(id);
     const user = await userService.getById(id);
     res.status(200).json({ user: user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.checkUserStatus = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await userService.updateUserMembershipStatus(id);
+    const user = await userService.getById(id);
+    res.status(200).json({ membershipStatus: user.membershipStatus });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

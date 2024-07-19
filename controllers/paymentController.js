@@ -51,11 +51,20 @@ exports.handleStripeWebhook = async (req, res) => {
 exports.cancelSubscription = async (req, res) => {
   const { id } = req.params;
   try {
+    console.log(`Received cancellation request for user ${id}`);
     await paymentService.cancelSubscription(id);
-    res.json({ message: "Subscription cancelled successfully" });
+    console.log(`Cancellation completed for user ${id}`);
+
+    // Fetch updated user data
+    const updatedUser = await User.findById(id);
+    console.log(`Updated user data:`, JSON.stringify(updatedUser, null, 2));
+
+    res.json({
+      message: "Subscription cancelled successfully",
+      user: updatedUser,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "An error occurred while cancelling subscription" });
+    console.error("Error in cancelSubscription controller:", error);
+    res.status(500).json({ error: "Failed to cancel subscription" });
   }
 };

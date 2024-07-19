@@ -14,7 +14,10 @@ const userSchema = new mongoose.Schema({
   termsAndConditions: { type: Boolean, default: false, required: true },
   notifyReview: { type: Boolean, default: false },
   notifyAccount: { type: Boolean, default: false },
-  membershipStatus: { type: String, default: "free" },
+  membershipStatus: { type: String, enum: ["free", "plus"], default: "free" },
+  trialEndsAt: Date,
+  membershipEndsAt: Date,
+  cancellationPending: { type: Boolean, default: false },
   stripeSubscriptionId: { type: String },
   stripeCustomerId: { type: String },
   billingAddress: {

@@ -16,8 +16,7 @@ const createCheckoutSession = async (userId) => {
       user.stripeCustomerId = customer.id;
     }
 
-    // Immediately update the user's membership status
-    user.membershipStatus = "premium";
+    user.membershipStatus = "plus";
     await user.save();
 
     const session = await stripe.checkout.sessions.create({
@@ -68,7 +67,7 @@ const handleStripeWebhook = async (event) => {
 
         const user = await User.findById(session.metadata.userId);
         user.payments.push(payment._id);
-        // Confirm the membership status
+
         user.membershipStatus = "plus";
         user.stripeSubscriptionId = session.subscription;
         await user.save();
@@ -84,7 +83,6 @@ const handleStripeWebhook = async (event) => {
             user.defaultPaymentMethod = setupIntent.payment_method;
             await user.save();
 
-            // notification
             console.log(`Default payment method updated for user ${user._id}`);
           }
         } catch (error) {
@@ -265,44 +263,75 @@ const handleStripeWebhook = async (event) => {
 
       case "customer.subscription.updated":
         const updatedSubscription = event.data.object;
+        console.log(
+          "Subscription update event:",
+          JSON.stringify(updatedSubscription, null, 2)
+        );
+
         const userForUpdatedSubscription = await User.findOne({
           stripeCustomerId: updatedSubscription.customer,
         });
+
         if (userForUpdatedSubscription) {
           console.log(
-            `Updating subscription for user ${userForUpdatedSubscription._id}`
-          );
-          console.log(`Subscription status: ${updatedSubscription.status}`);
-          console.log(
-            `Subscription cancel_at_period_end: ${updatedSubscription.cancel_at_period_end}`
+            `Current user status: ${userForUpdatedSubscription.membershipStatus}`
           );
 
-          userForUpdatedSubscription.stripeSubscriptionId =
-            updatedSubscription.id;
+          // Check if the subscription is cancelled but not yet ended
+          if (updatedSubscription.cancel_at_period_end) {
+            userForUpdatedSubscription.cancellationPending = true;
+            console.log("Setting cancellationPending to true");
+          }
 
-          // Check the subscription status and update membership accordingly
-          if (
-            updatedSubscription.status === "active" &&
-            !updatedSubscription.cancel_at_period_end
-          ) {
+          if (updatedSubscription.status === "trialing") {
             userForUpdatedSubscription.membershipStatus = "plus";
-          } else if (
-            updatedSubscription.status === "canceled" ||
-            updatedSubscription.cancel_at_period_end
-          ) {
+            userForUpdatedSubscription.trialEndsAt = new Date(
+              updatedSubscription.trial_end * 1000
+            );
+            console.log(
+              `User is in trial until ${userForUpdatedSubscription.trialEndsAt}`
+            );
+          } else if (updatedSubscription.status === "active") {
+            userForUpdatedSubscription.membershipStatus = "plus";
+            if (updatedSubscription.cancel_at_period_end) {
+              userForUpdatedSubscription.membershipEndsAt = new Date(
+                updatedSubscription.current_period_end * 1000
+              );
+              console.log(
+                `Subscription will end at ${userForUpdatedSubscription.membershipEndsAt}`
+              );
+            } else {
+              userForUpdatedSubscription.membershipEndsAt = null;
+              console.log(
+                "Subscription is active and not scheduled for cancellation"
+              );
+            }
+          } else {
             userForUpdatedSubscription.membershipStatus = "free";
+            userForUpdatedSubscription.membershipEndsAt = null;
+            userForUpdatedSubscription.cancellationPending = false;
+            console.log(
+              `Subscription status is ${updatedSubscription.status}. Setting status to free.`
+            );
           }
 
           await userForUpdatedSubscription.save();
           console.log(
-            `Updated subscription status to ${userForUpdatedSubscription.membershipStatus} for user ${userForUpdatedSubscription._id}`
+            `Updated user status to: ${userForUpdatedSubscription.membershipStatus}`
+          );
+          console.log(
+            `CancellationPending: ${userForUpdatedSubscription.cancellationPending}`
+          );
+        } else {
+          console.log(
+            `User not found for customer: ${updatedSubscription.customer}`
           );
         }
         break;
 
       case "billing_portal.session.created":
         console.log("Billing portal session created");
-        // You can add any necessary logic here
+
         break;
 
       default:
@@ -321,38 +350,37 @@ const cancelSubscription = async (userId) => {
       console.log(`User not found for ID: ${userId}`);
       throw new Error("User not found");
     }
-    console.log(
-      `User found: ${user.name}, current status: ${user.membershipStatus}`
-    );
 
     const { stripeSubscriptionId } = user;
     if (stripeSubscriptionId) {
       console.log(`Cancelling Stripe subscription: ${stripeSubscriptionId}`);
-      const canceledSubscription = await stripe.subscriptions.update(
+      const subscription = await stripe.subscriptions.update(
         stripeSubscriptionId,
         {
           cancel_at_period_end: true,
         }
       );
-      console.log("Stripe subscription updated successfully");
-      console.log(`Subscription status: ${canceledSubscription.status}`);
-      console.log(
-        `Subscription cancel_at_period_end: ${canceledSubscription.cancel_at_period_end}`
-      );
 
-      // Immediately update the user's status
-      user.membershipStatus = "free";
-      console.log(
-        `Updating user in database. New status: ${user.membershipStatus}`
-      );
+      user.cancellationPending = true;
+      console.log("Setting cancellationPending to true");
+
+      if (subscription.status === "trialing") {
+        user.trialEndsAt = new Date(subscription.trial_end * 1000);
+        console.log(`User will retain trial access until ${user.trialEndsAt}`);
+      } else {
+        user.membershipEndsAt = new Date(
+          subscription.current_period_end * 1000
+        );
+        console.log(`Subscription will end at ${user.membershipEndsAt}`);
+      }
+
       await user.save();
-      console.log("User updated in database");
+      console.log(`Updated user in database:`, JSON.stringify(user, null, 2));
     } else {
       console.log(`No active subscription found for user ${userId}`);
     }
   } catch (error) {
     console.error("Error in cancelSubscription:", error);
-    console.error("Error stack:", error.stack);
     throw error;
   }
 };

@@ -12,6 +12,7 @@ const paymentRoutes = require("./routes/payments-route");
 const paymentController = require("./controllers/paymentController");
 const widgetRoutes = require("./routes/widget-route");
 const checkAuth = require("./middleware/check-auth");
+const checkUserStatus = require("./middleware/check-user-status");
 
 const app = express();
 const envPath = path.join(__dirname, ".env");
@@ -40,6 +41,7 @@ app.use((req, res, next) => {
 });
 
 app.use(checkAuth);
+app.use(checkUserStatus);
 
 app.use("/static", express.static(path.join(__dirname, "public")));
 

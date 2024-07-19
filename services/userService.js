@@ -94,6 +94,9 @@ const getById = async (id) => {
     products: user.products,
     notifyAccount: user.notifyAccount,
     notifyReview: user.notifyReview,
+    trialEndsAt: user.trialEndsAt,
+    membershipEndsAt: user.membershipEndsAt,
+    cancellationPending: user.cancellationPending,
   };
 };
 
@@ -181,6 +184,31 @@ const deleteUser = async (id) => {
   return { message: "User and associated data deleted successfully" };
 };
 
+const updateUserMembershipStatus = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) return;
+
+  const now = new Date();
+
+  if (user.trialEndsAt && now > user.trialEndsAt) {
+    if (user.cancellationPending) {
+      user.membershipStatus = "free";
+      user.trialEndsAt = null;
+      user.cancellationPending = false;
+      user.stripeSubscriptionId = null;
+    } else {
+      user.trialEndsAt = null;
+    }
+  } else if (user.membershipEndsAt && now > user.membershipEndsAt) {
+    user.membershipStatus = "free";
+    user.membershipEndsAt = null;
+    user.cancellationPending = false;
+    user.stripeSubscriptionId = null;
+  }
+
+  await user.save();
+};
+
 module.exports = {
   register,
   login,
@@ -188,4 +216,5 @@ module.exports = {
   update,
   resetPassword,
   deleteUser,
+  updateUserMembershipStatus,
 };

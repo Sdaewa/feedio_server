@@ -56,4 +56,6 @@ router.post(
 
 router.delete("/:id", userController.deleteUser);
 
+router.get("/:id/check-status", userController.checkUserStatus);
+
 module.exports = router;
