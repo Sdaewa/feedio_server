@@ -1,25 +1,46 @@
-<div class="content-wrapper">
-<div class="wrapper-for-arrows" style="background-color: {{background}}; color: {{text}};" data-auto-scroll="{{autoScroll}}">
-    {{#each reviewsData}}
-      <div class="review-wrap item" >
-        <div class="imgDiv">
-          <img src="https://ui-avatars.com/api/?name={{this.name}}&background=random&color=fff" alt="{{this.name}}'s avatar">
+<div class="widget carousel" data-scroll-speed="{{scrollSpeed}}" data-auto-scroll="{{autoScroll}}" style="--background-color: {{background}}; --text-color: {{text}}">
+  <div class="scroll-container">
+    <div class="scroll-content">
+      {{#each reviewsData}}
+        <div class="masonry-item">
+          <div class="testimonial-card">
+            <div class="card-body">
+              <p class="card-text">"{{this.content}}"</p>
+              <div class="testimonial-footer">
+                <div class="rating" data-rating="{{this.rating}}">
+                  <span class="stars">★★★★★</span>
+                </div>
+                {{#unless ../hideDate}}
+                  <span class="review-date">{{this.createdAt}}</span>
+                {{/unless}}
+              </div>
+              <div class="testimonial-header">
+                <div class="avatar-wrapper">
+                  <img
+                    class="avatar"
+                    src="https://ui-avatars.com/api/?name={{this.name}}&background=random&color=fff"
+                    alt="{{this.name}}'s avatar"
+                  />
+                </div>
+                <div class="testimonial-info">
+                  <h5 class="card-title">{{this.name}}</h5>
+                  {{#if this.title}}
+                    <h6 class="card-subtitle">{{this.title}}</h6>
+                  {{/if}}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="personName">{{this.name}}</div>
-        <div class="description">{{this.content}}</div>
-        <div class="review-footer">
-        <span class="stars" data-rating="{{this.rating}}"></span>
-        {{#unless ../hideDate}}
-          <span class="review-date">{{this.createdAt}}</span>
-        {{/unless}}
-      </div>
-      </div>
-    {{/each}}
-    <div class="left-arrow-wrap arrow-wrap">
-      <div class="arrow" id="leftArrow"></div>
-    </div>
-    <div class="right-arrow-wrap arrow-wrap">
-      <div class="arrow" id="rightArrow"></div>
+      {{/each}}
     </div>
   </div>
+  <div class="arrow-wrap left-arrow-wrap">
+    <div class="arrow" id="leftArrow"></div>
+  </div>
+  <div class="arrow-wrap right-arrow-wrap">
+    <div class="arrow" id="rightArrow"></div>
+  </div>
 </div>
+
+<script src="/scripts/slide.js"></script>

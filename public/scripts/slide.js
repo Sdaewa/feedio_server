@@ -1,46 +1,57 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const wrapperForArrows = document.querySelector(".wrapper-for-arrows");
-  const reviewWraps = document.querySelectorAll(".review-wrap");
-  const leftArrow = document.getElementById("leftArrow");
-  const rightArrow = document.getElementById("rightArrow");
-  let currentReviewIndex = 0;
-  let autoSlideInterval;
+  const carousels = document.querySelectorAll(".widget.carousel");
 
-  const updateReviewDisplay = () => {
-    reviewWraps.forEach((wrap, index) => {
-      wrap.style.display = index === currentReviewIndex ? "flex" : "none";
-    });
-  };
+  carousels.forEach((carousel) => {
+    const container = carousel.querySelector(".scroll-container");
+    const content = carousel.querySelector(".scroll-content");
+    const items = content.querySelectorAll(".masonry-item");
+    const prevBtn = carousel.querySelector(".left-arrow-wrap");
+    const nextBtn = carousel.querySelector(".right-arrow-wrap");
 
-  const showNextReview = () => {
-    currentReviewIndex = (currentReviewIndex + 1) % reviewWraps.length;
-    updateReviewDisplay();
-  };
+    let currentIndex = 0;
+    const itemCount = items.length;
 
-  const showPreviousReview = () => {
-    currentReviewIndex =
-      (currentReviewIndex - 1 + reviewWraps.length) % reviewWraps.length;
-    updateReviewDisplay();
-  };
-
-  const startAutoSlide = () => {
-    if (autoScroll) {
-      autoSlideInterval = setInterval(showNextReview, 3000);
+    function goToSlide(index) {
+      if (index < 0) {
+        index = itemCount - 1;
+      } else if (index >= itemCount) {
+        index = 0;
+      }
+      currentIndex = index;
+      const offset = -index * 100;
+      content.style.transform = `translateX(${offset}%)`;
     }
-  };
 
-  leftArrow.addEventListener("click", () => {
-    showPreviousReview();
-    clearInterval(autoSlideInterval);
-    startAutoSlide();
+    function nextSlide() {
+      goToSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+      goToSlide(currentIndex - 1);
+    }
+
+    nextBtn.addEventListener("click", nextSlide);
+    prevBtn.addEventListener("click", prevSlide);
+
+    // Auto-scroll functionality
+    const scrollSpeed = parseInt(carousel.dataset.scrollSpeed) || 5000; // Default to 5 seconds
+    const autoScroll = carousel.dataset.autoScroll === "true";
+
+    let autoScrollInterval;
+
+    function startAutoScroll() {
+      if (autoScroll) {
+        autoScrollInterval = setInterval(nextSlide, scrollSpeed);
+      }
+    }
+
+    function stopAutoScroll() {
+      clearInterval(autoScrollInterval);
+    }
+
+    container.addEventListener("mouseenter", stopAutoScroll);
+    container.addEventListener("mouseleave", startAutoScroll);
+
+    startAutoScroll();
   });
-
-  rightArrow.addEventListener("click", () => {
-    showNextReview();
-    clearInterval(autoSlideInterval);
-    startAutoSlide();
-  });
-
-  updateReviewDisplay(currentReviewIndex);
-  startAutoSlide();
 });

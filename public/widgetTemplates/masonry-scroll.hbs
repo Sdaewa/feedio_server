@@ -1,35 +1,43 @@
 <div
   class="widget masonry_scroll"
   data-scroll-speed="{{scrollSpeed}}"
+  data-auto-scroll="{{autoScroll}}"
   style="--background-color: {{background}}; --text-color: {{text}}"
 >
-  {{#each reviewsData}}
-    <div class="masonry-item">
-      <div class="testimonial-card">
-        <div class="card-body">
-          <p class="card-text">"{{this.content}}"</p>
-          <div class="testimonial-footer">
-            <div class="rating" data-rating="{{this.rating}}">
-              <span class="stars">★★★★★</span>
-            </div>
-          </div>
-          <div class="testimonial-header">
-            <div class="avatar-wrapper">
-              <img
-                class="avatar"
-                src="https://ui-avatars.com/api/?name={{this.name}}&background=random&color=fff"
-                alt="{{this.name}}'s avatar"
-              />
-            </div>
-            <div class="testimonial-info">
-              <h5 class="card-title">{{this.name}}</h5>
-              {{#if this.title}}
-                <h6 class="card-subtitle">{{this.title}}</h6>
-              {{/if}}
+  <div class="scroll-container">
+    <div class="scroll-content">
+      {{#each reviewsData}}
+        <div class="masonry-item">
+          <div class="testimonial-card">
+            <div class="card-body">
+              <p class="card-text">"{{this.content}}"</p>
+              <div class="testimonial-footer">
+                <div class="rating" data-rating="{{this.rating}}">
+                  <span class="stars">★★★★★</span>
+                </div>
+                {{#unless ../hideDate}}
+                  <span class="review-date">{{this.createdAt}}</span>
+                {{/unless}}
+              </div>
+              <div class="testimonial-header">
+                <div class="avatar-wrapper">
+                  <img
+                    class="avatar"
+                    src="https://ui-avatars.com/api/?name={{this.name}}&background=random&color=fff"
+                    alt="{{this.name}}'s avatar"
+                  />
+                </div>
+                <div class="testimonial-info">
+                  <h5 class="card-title">{{this.name}}</h5>
+                  {{#if this.title}}
+                    <h6 class="card-subtitle">{{this.title}}</h6>
+                  {{/if}}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      {{/each}}
     </div>
-  {{/each}}
+  </div>
 </div>

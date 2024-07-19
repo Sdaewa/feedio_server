@@ -1,8 +1,4 @@
-const stripe = require("stripe")(
-  "sk_test_51NS5wyCbn1CFQkB8T1TZaH2UqOFaHp8taw4kfF5RyuFLSIrWfY0KhJDp1gFUldX8rc6QEkhxaT9vCYqBjxDuznkW00SIzhL19C"
-);
-// const stripeApiKey = process.env.STRIPE_SECRET_KEY;
-// const stripe = require("stripe")(stripeApiKey);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const Payment = require("../models/Payment");
 const User = require("../models/user");
@@ -48,13 +44,14 @@ const createCustomerPortalSession = async (userId) => {
   }
   const session = await stripe.billingPortal.sessions.create({
     customer: user.stripeCustomerId,
-    return_url: `${process.env.CLIENT_URL}/dashboard`,
+    return_url: `${process.env.CLIENT_URL}/spaces`,
   });
   return session;
 };
 
 const handleStripeWebhook = async (event) => {
   try {
+    console.log(`Processing event type: ${event.type}`);
     switch (event.type) {
       case "checkout.session.completed":
         const session = event.data.object;
@@ -252,7 +249,6 @@ const handleStripeWebhook = async (event) => {
           stripeCustomerId: paidInvoice.customer,
         });
         if (userForPaidInvoice) {
-          // Record the paid invoice and update user status
           const paymentRecord = new Payment({
             user: userForPaidInvoice._id,
             stripePaymentId: paidInvoice.id,
@@ -266,6 +262,48 @@ const handleStripeWebhook = async (event) => {
         }
         break;
 
+      case "customer.subscription.updated":
+        const updatedSubscription = event.data.object;
+        const userForUpdatedSubscription = await User.findOne({
+          stripeCustomerId: updatedSubscription.customer,
+        });
+        if (userForUpdatedSubscription) {
+          console.log(
+            `Updating subscription for user ${userForUpdatedSubscription._id}`
+          );
+          console.log(`Subscription status: ${updatedSubscription.status}`);
+          console.log(
+            `Subscription cancel_at_period_end: ${updatedSubscription.cancel_at_period_end}`
+          );
+
+          userForUpdatedSubscription.stripeSubscriptionId =
+            updatedSubscription.id;
+
+          // Check the subscription status and update membership accordingly
+          if (
+            updatedSubscription.status === "active" &&
+            !updatedSubscription.cancel_at_period_end
+          ) {
+            userForUpdatedSubscription.membershipStatus = "plus";
+          } else if (
+            updatedSubscription.status === "canceled" ||
+            updatedSubscription.cancel_at_period_end
+          ) {
+            userForUpdatedSubscription.membershipStatus = "free";
+          }
+
+          await userForUpdatedSubscription.save();
+          console.log(
+            `Updated subscription status to ${userForUpdatedSubscription.membershipStatus} for user ${userForUpdatedSubscription._id}`
+          );
+        }
+        break;
+
+      case "billing_portal.session.created":
+        console.log("Billing portal session created");
+        // You can add any necessary logic here
+        break;
+
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
@@ -275,19 +313,45 @@ const handleStripeWebhook = async (event) => {
 };
 
 const cancelSubscription = async (userId) => {
+  console.log(`Attempting to cancel subscription for user ${userId}`);
   try {
     const user = await User.findById(userId);
     if (!user) {
+      console.log(`User not found for ID: ${userId}`);
       throw new Error("User not found");
     }
+    console.log(
+      `User found: ${user.name}, current status: ${user.membershipStatus}`
+    );
 
     const { stripeSubscriptionId } = user;
-    await stripe.subscriptions.del(stripeSubscriptionId);
-    user.membershipStatus = "free";
-    await user.save();
-  } catch (error) {
-    console.error("Error in cancelSubscription:", error.message);
+    if (stripeSubscriptionId) {
+      console.log(`Cancelling Stripe subscription: ${stripeSubscriptionId}`);
+      const canceledSubscription = await stripe.subscriptions.update(
+        stripeSubscriptionId,
+        {
+          cancel_at_period_end: true,
+        }
+      );
+      console.log("Stripe subscription updated successfully");
+      console.log(`Subscription status: ${canceledSubscription.status}`);
+      console.log(
+        `Subscription cancel_at_period_end: ${canceledSubscription.cancel_at_period_end}`
+      );
 
+      // Immediately update the user's status
+      user.membershipStatus = "free";
+      console.log(
+        `Updating user in database. New status: ${user.membershipStatus}`
+      );
+      await user.save();
+      console.log("User updated in database");
+    } else {
+      console.log(`No active subscription found for user ${userId}`);
+    }
+  } catch (error) {
+    console.error("Error in cancelSubscription:", error);
+    console.error("Error stack:", error.stack);
     throw error;
   }
 };
@@ -298,44 +362,3 @@ module.exports = {
   handleStripeWebhook,
   cancelSubscription,
 };
-
-// New cases
-// [0] Unhandled event type billing_portal.session.created
-// case "customer.created":
-//   case "customer.updated":
-//     // Logic for customer creation or update
-//     break;
-
-//   case "customer.deleted":
-//     // Logic for customer deletion
-//     break;
-
-//   case "customer.subscription.updated":
-//     // Logic for subscription updates
-//     break;
-
-//   case "invoice.payment_failed":
-//     // Logic for failed invoice payment
-//     break;
-
-//   case "charge.succeeded":
-//   case "charge.failed":
-//     // Logic for charge success or failure
-//     break;
-
-//   case "payment_method.attached":
-//   case "payment_method.detached":
-//     // Logic for payment method attachment or detachment
-//     break;
-
-//   case "subscription_schedule.created":
-//   case "subscription_schedule.updated":
-//   case "subscription_schedule.released":
-//     // Logic for subscription schedule events
-//     break;
-
-//   case "product.created":
-//   case "product.updated":
-//   case "product.deleted":
-//     // Logic for product lifecycle events
-//     break;

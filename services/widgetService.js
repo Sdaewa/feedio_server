@@ -94,6 +94,7 @@ const generateWidgetRepresentation = async (
   let templatePath;
   let templateString;
   let stylePath;
+  let scriptPath;
 
   const reviews = await Review.find({ product: productId, status: "fav" });
 
@@ -125,8 +126,7 @@ const generateWidgetRepresentation = async (
         "../public/widgetTemplates/masonry-scroll.hbs"
       );
       stylePath = path.join(__dirname, "../public/styles/masonry-scroll.css");
-      scriptPath = path.join(__dirname, "../public/scripts/scroll.js");
-
+      scriptPath = path.join(__dirname, "../public/scripts/masonry-scroll.js");
       break;
 
     case "masonry_fix":
@@ -145,7 +145,6 @@ const generateWidgetRepresentation = async (
       );
       stylePath = path.join(__dirname, "../public/styles/carousel.css");
       scriptPath = path.join(__dirname, "../public/scripts/slide.js");
-
       break;
 
     case "average_card":
@@ -224,6 +223,8 @@ const generateWidgetRepresentation = async (
     if (scriptPath) {
       const scriptContent = fs.readFileSync(scriptPath, "utf-8");
       widgetRepresentation += `<script>${scriptContent}</script>`;
+      // Add this line to initialize the carousel after the script is injected
+      widgetRepresentation += `<script>document.addEventListener('DOMContentLoaded', function() { const carousel = document.querySelector('.widget.carousel'); if (carousel) { initCarousel(carousel); } });</script>`;
     }
   } catch (error) {
     console.error("Error compiling the Handlebars template:", error);

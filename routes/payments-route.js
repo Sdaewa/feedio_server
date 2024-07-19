@@ -14,6 +14,10 @@ router.post(
 );
 router.post("/cancel-subscription", paymentController.cancelSubscription);
 
-router.post("/webhook", paymentController.handleStripeWebhook);
+router.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  paymentController.handleStripeWebhook
+);
 
 module.exports = router;

@@ -18,6 +18,12 @@ const envPath = path.join(__dirname, ".env");
 
 dotenv.config({ path: envPath });
 
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  paymentController.handleStripeWebhook
+);
+
 app.use(cors());
 
 app.use(
@@ -60,8 +66,6 @@ app.use(
 );
 
 app.use("/api/users/:id/payments", paymentRoutes);
-
-app.use("/api/payments/", paymentController.handleStripeWebhook);
 
 app.use((req, res, next) => {
   console.log(`Received ${req.method} request to ${req.url}`);
