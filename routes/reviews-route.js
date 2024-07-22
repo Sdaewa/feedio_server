@@ -6,7 +6,6 @@ const reviewController = require("../controllers/reviewController");
 const router = express.Router();
 
 router.use((req, res, next) => {
-  console.log("Request reached reviews-route.js");
   next();
 });
 

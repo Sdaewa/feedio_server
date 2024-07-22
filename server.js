@@ -77,7 +77,6 @@ app.use((req, res, next) => {
 app.use(
   "/api/collection-feedback",
   (req, res, next) => {
-    console.log("Entering /api/collection-feedback route");
     next();
   },
   reviewRoutes
