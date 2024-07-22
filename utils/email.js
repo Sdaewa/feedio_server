@@ -136,9 +136,47 @@ async function sendAccountUpdateEmail(
   });
 }
 
+async function sendPasswordResetEmail(email, resetUrl) {
+  console.log(email, resetUrl);
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../public/emailTemplates/password-reset-email.hbs"
+    );
+    const cssPath = path.join(
+      __dirname,
+      "../public/styles/password-reset-email.css"
+    );
+
+    const source = fs.readFileSync(templatePath, "utf8");
+    const cssContent = fs.readFileSync(cssPath, "utf8");
+
+    let htmlWithCSS = source.replace(
+      "<style></style>",
+      `<style>${cssContent}</style>`
+    );
+
+    const template = handlebars.compile(htmlWithCSS);
+    const replacements = {
+      resetUrl: resetUrl,
+      currentYear: new Date().getFullYear(),
+    };
+    const htmlToSend = template(replacements);
+
+    await sendEmail({
+      to: email,
+      subject: "Reset Your Feedio Password",
+      html: htmlToSend,
+    });
+  } catch (err) {
+    console.error("Error in sending password reset email:", err);
+  }
+}
+
 module.exports = {
   sendEmail,
   sendAdminNotificationEmail,
   sendAccountCreationEmail,
   sendAccountUpdateEmail,
+  sendPasswordResetEmail,
 };

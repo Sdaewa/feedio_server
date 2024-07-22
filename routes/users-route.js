@@ -49,8 +49,19 @@ router.put(
 );
 
 router.post(
-  "/resetPassword",
+  "/request-password-reset",
   [check("email").isEmail().withMessage("Please enter a valid email")],
+  userController.requestPasswordReset
+);
+
+router.post(
+  "/reset-password",
+  [
+    check("token").not().isEmpty().withMessage("Token is required"),
+    check("newPassword")
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters long"),
+  ],
   userController.resetPassword
 );
 

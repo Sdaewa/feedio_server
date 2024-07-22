@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
+const crypto = require("crypto");
+const { sendPasswordResetEmail } = require("../utils/email");
 
 const {
   sendAccountCreationEmail,
@@ -151,17 +153,50 @@ const update = async ({
   return { message: "User updated successfully" };
 };
 
-const resetPassword = async (email, password) => {
+const requestPasswordReset = async (email) => {
+  console.log(email);
   const user = await User.findOne({ email });
   if (!user) {
-    throw new Error("User not found");
+    return {
+      message:
+        "If a user with this email exists, a password reset link has been sent.",
+    };
   }
 
-  const hashedPassword = await bcrypt.hash(password, 12);
-  user.password = hashedPassword;
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const resetTokenExpiry = Date.now() + 3600000;
+
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = resetTokenExpiry;
   await user.save();
 
-  return { message: "Password reset successfully", password };
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+  await sendPasswordResetEmail(user.email, resetUrl);
+
+  return {
+    message:
+      "If a user with this email exists, a password reset link has been sent.",
+  };
+};
+
+const resetPassword = async (token, newPassword) => {
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new Error("Invalid or expired password reset token");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  user.password = hashedPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  return { message: "Password has been reset successfully" };
 };
 
 const deleteUser = async (id) => {
@@ -214,6 +249,7 @@ module.exports = {
   login,
   getById,
   update,
+  requestPasswordReset,
   resetPassword,
   deleteUser,
   updateUserMembershipStatus,

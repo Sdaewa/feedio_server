@@ -90,15 +90,31 @@ exports.updateUser = async (req, res, next) => {
   }
 };
 
-exports.resetPassword = async (req, res) => {
-  const { email, password } = req.body;
+exports.requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
 
   try {
-    const message = await userService.resetPassword(email, password);
-    res.status(200).json({ message: message });
+    const result = await userService.requestPasswordReset(email);
+    res.status(200).json(result);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: error.message });
+    console.error(error);
+
+    res.status(200).json({
+      message:
+        "If a user with this email exists, a password reset link has been sent.",
+    });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const result = await userService.resetPassword(token, newPassword);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: error.message });
   }
 };
 
