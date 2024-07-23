@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const charCount = document.querySelector(".char-count");
   const submitBtn = document.querySelector(".submit-btn");
 
-  // Star rating
   stars.forEach((star) => {
     star.addEventListener("click", function () {
       const value = this.getAttribute("data-value");
@@ -19,7 +18,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // NPS score
   npsOptions.forEach((option) => {
     option.addEventListener("change", function () {
       npsOptions.forEach((opt) =>
@@ -29,7 +27,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Character count
   feedbackTextarea.addEventListener("input", function () {
     const length = this.value.length;
     charCount.textContent = `${length}/100 characters`;

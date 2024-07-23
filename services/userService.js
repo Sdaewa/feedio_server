@@ -162,7 +162,7 @@ const requestPasswordReset = async (email) => {
   }
 
   const resetPasswordToken = crypto.randomBytes(32).toString("hex");
-  const resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+  const resetPasswordExpires = Date.now() + 3600000;
 
   user.resetPasswordToken = resetPasswordToken;
   user.resetPasswordExpires = resetPasswordExpires;

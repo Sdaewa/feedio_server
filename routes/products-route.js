@@ -12,7 +12,6 @@ router.post(
   "/createProduct",
   [
     check("name").not().isEmpty().withMessage("Product name is required"),
-    // check("imageUrl").not().isEmpty().withMessage("Image URL is required"),
     check("header").not().isEmpty().withMessage("Header is required"),
     check("content").not().isEmpty().withMessage("Content is required"),
     check("questions").isArray().withMessage("Questions must be an array"),

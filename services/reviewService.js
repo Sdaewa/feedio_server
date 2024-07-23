@@ -306,7 +306,7 @@ const generateWordFrequencies = async (productId) => {
   const wordFrequencies = Object.entries(wordCounts)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 50); // Top 50 words
+    .slice(0, 20);
 
   return wordFrequencies;
 };

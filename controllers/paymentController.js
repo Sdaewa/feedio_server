@@ -55,7 +55,6 @@ exports.cancelSubscription = async (req, res) => {
     await paymentService.cancelSubscription(id);
     console.log(`Cancellation completed for user ${id}`);
 
-    // Fetch updated user data
     const updatedUser = await User.findById(id);
     console.log(`Updated user data:`, JSON.stringify(updatedUser, null, 2));
 

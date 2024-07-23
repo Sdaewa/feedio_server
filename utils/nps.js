@@ -1,4 +1,3 @@
-// Public Function to Calculate NPS
 const calculateNetPromoterScore = async (inputScores) => {
   try {
     validateInputScores(inputScores);
@@ -9,12 +8,10 @@ const calculateNetPromoterScore = async (inputScores) => {
   }
 };
 
-// Validate All Input Scores
 const validateInputScores = (inputScores) => {
   inputScores.forEach((score) => validateInputScore(score));
 };
 
-// Validate a Single Input Score
 const validateInputScore = (score) => {
   if (typeof score !== "number") {
     throw new Error("Score must be a number");
@@ -24,7 +21,6 @@ const validateInputScore = (score) => {
   }
 };
 
-// Classify Input Scores and Calculate Percentages
 const calculatePercentages = (inputScores) => {
   const data = {
     detractors: 0,
@@ -55,7 +51,6 @@ const calculatePercentages = (inputScores) => {
   return calculateNPS(data);
 };
 
-// Calculate the NPS Score
 const calculateNPS = (data) => {
   const rawNPS = data.promotersPercentage - data.detractorsPercentage;
   data.score = Math.round(rawNPS * 100);
@@ -63,7 +58,6 @@ const calculateNPS = (data) => {
   return data;
 };
 
-// Determine Summary Based on NPS Score
 const determineSummary = (score) => {
   if (score === -100) {
     return "broken";

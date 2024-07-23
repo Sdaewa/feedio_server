@@ -223,7 +223,7 @@ const generateWidgetRepresentation = async (
     if (scriptPath) {
       const scriptContent = fs.readFileSync(scriptPath, "utf-8");
       widgetRepresentation += `<script>${scriptContent}</script>`;
-      // Add this line to initialize the carousel after the script is injected
+
       widgetRepresentation += `<script>document.addEventListener('DOMContentLoaded', function() { const carousel = document.querySelector('.widget.carousel'); if (carousel) { initCarousel(carousel); } });</script>`;
     }
   } catch (error) {

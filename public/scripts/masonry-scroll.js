@@ -15,13 +15,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const contentHeight = content.offsetHeight;
 
       if (contentHeight <= containerHeight) {
-        // If content is shorter than container, clone it until it's taller
         while (content.offsetHeight <= containerHeight * 2) {
           const clone = content.cloneNode(true);
           container.appendChild(clone);
         }
       } else {
-        // If content is taller, just add one clone
         const clone = content.cloneNode(true);
         container.appendChild(clone);
       }
@@ -37,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (Math.abs(currentPosition) >= contentHeight / 2) {
         content.style.transition = "none";
         content.style.top = "0px";
-        content.offsetHeight; // Trigger reflow
+        content.offsetHeight;
         content.style.transition = "top 0.5s linear";
       } else {
         content.style.top = `${currentPosition - 1}px`;

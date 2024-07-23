@@ -17,19 +17,21 @@ let transporter = nodemailer.createTransport({
 });
 
 function sendEmail({ to, subject, html }) {
-  const mailOptions = {
-    from: process.env.EMAIL_USERNAME,
-    to: to,
-    subject: subject,
-    html: html,
-  };
+  return new Promise((resolve, reject) => {
+    const mailOptions = {
+      from: process.env.EMAIL_USERNAME,
+      to: to,
+      subject: subject,
+      html: html,
+    };
 
-  transporter.sendMail(mailOptions, function (err, data) {
-    if (err) {
-      console.log("Error:", err);
-    } else {
-      console.log("Email sent successfully");
-    }
+    transporter.sendMail(mailOptions, function (err, info) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(info);
+      }
+    });
   });
 }
 
@@ -172,10 +174,79 @@ async function sendPasswordResetEmail(email, resetUrl) {
   }
 }
 
+async function sendSubscriptionCreatedEmail(user, subscriptionDetails) {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../public/emailTemplates/subscription-created-email.hbs"
+    );
+    const cssPath = path.join(
+      __dirname,
+      "../public/styles/subscription-created-email.css"
+    );
+
+    const source = fs.readFileSync(templatePath, "utf8");
+    const cssContent = fs.readFileSync(cssPath, "utf8");
+
+    let htmlWithCSS = source.replace(
+      "<style></style>",
+      `<style>${cssContent}</style>`
+    );
+
+    const template = handlebars.compile(htmlWithCSS);
+    const replacements = {
+      userName: user.name,
+      subscriptionDetails: subscriptionDetails.planName,
+      startDate: new Date(
+        subscriptionDetails.startDate * 1000
+      ).toLocaleDateString(),
+      dashboardUrl: `${process.env.CLIENT_URL}/dashboard`,
+      currentYear: new Date().getFullYear(),
+    };
+    const htmlToSend = template(replacements);
+
+    const result = await sendEmail({
+      to: user.email,
+      subject: "Your Feedio Subscription is Now Active!",
+      html: htmlToSend,
+    });
+  } catch (err) {
+    console.error("Error in sending subscription created email:", err);
+    console.error("Error details:", err.stack);
+    throw err;
+  }
+}
+
+async function sendSubscriptionCancelledEmail(user) {
+  // Similar implementation to sendSubscriptionCreatedEmail
+}
+
+async function sendTrialEndingSoonEmail(user, daysLeft) {
+  // Implementation for trial ending soon notification
+}
+
+async function sendPaymentSucceededEmail(user, paymentDetails) {
+  // Implementation for payment succeeded notification
+}
+
+async function sendPaymentFailedEmail(user, paymentDetails) {
+  // Implementation for payment failed notification
+}
+
+async function sendSubscriptionUpdatedEmail(user, updateDetails) {
+  // Implementation for subscription updated notification
+}
+
 module.exports = {
   sendEmail,
   sendAdminNotificationEmail,
   sendAccountCreationEmail,
   sendAccountUpdateEmail,
   sendPasswordResetEmail,
+  sendSubscriptionCreatedEmail,
+  sendSubscriptionCancelledEmail,
+  sendTrialEndingSoonEmail,
+  sendPaymentSucceededEmail,
+  sendPaymentFailedEmail,
+  sendSubscriptionUpdatedEmail,
 };

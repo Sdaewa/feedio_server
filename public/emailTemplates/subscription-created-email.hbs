@@ -1,0 +1,48 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Feedio Subscription Has Been Created</title>
+    <style></style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        Your Feedio Subscription is Active!
+      </div>
+      <div class="content">
+        <p>Hello {{userName}},</p>
+        <p>Great news! Your Feedio subscription has been successfully created
+          and is now active.</p>
+        <div class="details-box">
+          <p><strong>Subscription Plan:</strong> {{subscriptionDetails}}</p>
+          <p><strong>Status:</strong> Active</p>
+          <p><strong>Start Date:</strong> {{startDate}}</p>
+        </div>
+        <p>With your
+          {{subscriptionDetails}}, you now have access to all our premium
+          features, including:</p>
+        <ul>
+          <li>Advanced analytics</li>
+          <li>Unlimited product reviews</li>
+          <li>Priority customer support</li>
+          <!-- Add more features as needed -->
+        </ul>
+        <p>If you have any questions about your subscription or need assistance,
+          please don't hesitate to contact our support team.</p>
+        <a href="{{dashboardUrl}}" class="cta-button">Go to My Dashboard</a>
+        <p>Thank you for choosing Feedio. We're excited to help you grow your
+          business!</p>
+        <p>Best regards,</p>
+        <p>The Feedio Team</p>
+      </div>
+      <div class="footer">
+        This is an automated email. Please do not reply to this message.
+        <br />
+        ©
+        {{currentYear}}
+        Feedio, All Rights Reserved.
+      </div>
+    </div>
+  </body>
+</html>

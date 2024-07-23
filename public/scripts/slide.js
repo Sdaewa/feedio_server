@@ -33,8 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     nextBtn.addEventListener("click", nextSlide);
     prevBtn.addEventListener("click", prevSlide);
 
-    // Auto-scroll functionality
-    const scrollSpeed = parseInt(carousel.dataset.scrollSpeed) || 5000; // Default to 5 seconds
+    const scrollSpeed = parseInt(carousel.dataset.scrollSpeed) || 5000;
     const autoScroll = carousel.dataset.autoScroll === "true";
 
     let autoScrollInterval;
