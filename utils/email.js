@@ -137,7 +137,6 @@ async function sendAccountUpdateEmail(
 }
 
 async function sendPasswordResetEmail(email, resetUrl) {
-  console.log(email, resetUrl);
   try {
     const templatePath = path.join(
       __dirname,

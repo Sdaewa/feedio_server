@@ -3,9 +3,8 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
-const { sendPasswordResetEmail } = require("../utils/email");
-
 const {
+  sendPasswordResetEmail,
   sendAccountCreationEmail,
   sendAccountUpdateEmail,
 } = require("../utils/email");
@@ -154,7 +153,6 @@ const update = async ({
 };
 
 const requestPasswordReset = async (email) => {
-  console.log(email);
   const user = await User.findOne({ email });
   if (!user) {
     return {
@@ -163,24 +161,31 @@ const requestPasswordReset = async (email) => {
     };
   }
 
-  const resetToken = crypto.randomBytes(32).toString("hex");
-  const resetTokenExpiry = Date.now() + 3600000;
+  const resetPasswordToken = crypto.randomBytes(32).toString("hex");
+  const resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
 
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = resetTokenExpiry;
-  await user.save();
+  user.resetPasswordToken = resetPasswordToken;
+  user.resetPasswordExpires = resetPasswordExpires;
 
-  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+  try {
+    await user.save();
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetPasswordToken}`;
+    await sendPasswordResetEmail(user.email, resetUrl);
 
-  await sendPasswordResetEmail(user.email, resetUrl);
-
-  return {
-    message:
-      "If a user with this email exists, a password reset link has been sent.",
-  };
+    return {
+      message:
+        "If a user with this email exists, a password reset link has been sent.",
+    };
+  } catch (error) {
+    throw new Error("Failed to process password reset request");
+  }
 };
 
 const resetPassword = async (token, newPassword) => {
+  if (!token || !newPassword) {
+    throw new Error("Token and new password are required");
+  }
+
   const user = await User.findOne({
     resetPasswordToken: token,
     resetPasswordExpires: { $gt: Date.now() },
@@ -194,6 +199,7 @@ const resetPassword = async (token, newPassword) => {
   user.password = hashedPassword;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
+
   await user.save();
 
   return { message: "Password has been reset successfully" };

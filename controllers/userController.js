@@ -109,11 +109,17 @@ exports.requestPasswordReset = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
+  if (!token || !newPassword) {
+    return res
+      .status(400)
+      .json({ message: "Token and new password are required" });
+  }
+
   try {
     const result = await userService.resetPassword(token, newPassword);
     res.status(200).json(result);
   } catch (error) {
-    console.error(error);
+    console.error("Error in resetPassword controller:", error);
     res.status(400).json({ message: error.message });
   }
 };

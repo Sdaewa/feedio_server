@@ -36,6 +36,8 @@ const userSchema = new mongoose.Schema({
   invoices: [invoiceSchema],
   products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   payments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
 });
 
 module.exports = mongoose.model("User", userSchema);
