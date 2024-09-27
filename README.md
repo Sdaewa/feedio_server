@@ -1,78 +1,105 @@
-# Feedio - Testimonials App
+# @feedio_server
 
+Welcome to the @feedio_server project! This README will guide you through the setup process and provide an overview of the project structure to help you get started quickly.
 
+## Table of Contents
 
-## Features
+1. [Introduction](#introduction)
+2. [Prerequisites](#prerequisites)
+3. [Installation](#installation)
+4. [Project Structure](#project-structure)
+5. [Configuration](#configuration)
+6. [Running the Server](#running-the-server)
+7. [Testing](#testing)
+8. [Contributing](#contributing)
+9. [License](#license)
 
-- Display user testimonials in various layouts.
-- Collect feedback and ratings from users.
-- Secure user data and interactions.
-- Analyze feedback using sentiment analysis.
-- Integration with Stripe for payment processing.
-- Email notifications using Nodemailer.
+## Introduction
 
-## Getting Started
+@feedio_server is a Node.js-based server application that handles various functionalities related to feed management and processing. It utilizes Express.js for routing and includes features such as authentication, database interactions, and external API integrations.
 
-### Prerequisites
+## Prerequisites
 
-- Node.js
-- Yarn package manager
-- MongoDB
+Before you begin, ensure you have the following installed:
 
-### Installation
+- Node.js (v14 or later recommended)
+- npm (usually comes with Node.js)
+- MongoDB (for database operations)
 
-1. **Clone the repository**
+## Installation
 
-   ```bash
-   git clone https://github.com/sdaewa/feedio.git
+1. Clone the repository:
+
+   ```
+   git clone https://github.com/sdaewa/feedio_server.git
+   cd feedio_server
    ```
 
-2. **Install dependencies for both frontend and backend using Yarn's workspace feature**
-   ```bash
-   yarn install
+2. Install dependencies:
+   ```
+   npm install
    ```
 
-### Running the App
+## Project Structure
 
-- **Frontend**
+The project follows a modular structure:
 
-  ```bash
-  yarn workspace client start
-  ```
+- `src/`: Contains the main source code
+  - `controllers/`: Request handlers for different routes
+  - `models/`: Database models and schemas
+  - `routes/`: Express route definitions
+  - `services/`: Business logic and external service integrations
+  - `utils/`: Utility functions and helpers
+- `config/`: Configuration files
+- `tests/`: Unit and integration tests
 
-- **Backend**
-  ```bash
-  yarn workspace server start
-  ```
+## Configuration
 
-## Tech Stack
+1. Create a `.env` file in the root directory based on the `.env.example` file.
+2. Fill in the necessary environment variables, such as database connection strings, API keys, and server settings.
 
-### Frontend:
+## Running the Server
 
-- React (v18.2.0)
-- @mui/material for Material-UI components
-- Axios for HTTP requests
-- Chart.js for visualizations
-- React Router DOM for routing
-- Emotion for styled components
-- And more...
+To start the server in development mode:
 
-### Backend:
+```
+npm run dev
+```
 
-- Express.js as the server framework
-- Mongoose for MongoDB object modeling
-- JSON Web Tokens (JWT) for authentication
-- Bcrypt for password hashing
-- Handlebars for templating
-- Helmet for security headers
-- Stripe for payment processing
-- Nodemailer for sending emails
-- And more...
+For production:
+
+```
+npm start
+```
+
+The server will start on the port specified in your environment variables (default is 3000).
+
+## Testing
+
+Run the test suite using:
+
+```
+npm test
+```
+
+For coverage reports:
+
+```
+npm run test:coverage
+```
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+Please ensure your code adheres to the existing style conventions and passes all tests.
 
 ## License
 
-This project is licensed under the ISC License.
+This project is currently licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). See the [LICENSE](LICENSE) file for details.
+
+Please note that this license may change in the future as the project evolves.

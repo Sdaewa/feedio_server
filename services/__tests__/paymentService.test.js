@@ -3,11 +3,11 @@ const paymentService = require("../paymentService");
 const Payment = require("../../models/Payment");
 const User = require("../../models/user");
 const {
-  sendSubscriptionCreatedEmail,
-  sendSubscriptionCancelledEmail,
-  sendTrialEndingSoonEmail,
-  sendPaymentSucceededEmail,
-  sendSubscriptionUpdatedEmail,
+  //   sendSubscriptionCreatedEmail,
+  //   sendSubscriptionCancelledEmail,
+  //   sendTrialEndingSoonEmail,
+  //   sendPaymentSucceededEmail,
+  //   sendSubscriptionUpdatedEmail,
 } = require("../../utils/email");
 
 jest.mock("stripe");
