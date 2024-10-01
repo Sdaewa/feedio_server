@@ -114,9 +114,8 @@ const generateWidgetRepresentation = async (
     header: product.header,
     content: product.content,
     questions: product.questions,
-    rating: product.averageRating,
+    averageRating: product.averageRating,
   };
-
   const itemsPerView = 3;
 
   switch (type) {
@@ -197,6 +196,17 @@ const generateWidgetRepresentation = async (
     return number.toFixed(digits);
   });
 
+  handlebars.registerHelper("formatDate", function (date) {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  });
+
+  handlebars.registerHelper("multiply", function (a, b) {
+    return a * b;
+  });
   try {
     templateString = fs.readFileSync(templatePath, "utf-8");
 

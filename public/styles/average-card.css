@@ -1,5 +1,5 @@
 .widget.average_card {
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   width: 50%;
   max-width: 300px;
   margin: 20px auto;
@@ -11,53 +11,71 @@
   text-align: center;
 }
 
-.widget.average_card .fa {
-  font-size: 25px;
-  color: #ffcc00;
-}
-
 .stars {
   display: inline-block;
-  font-size: 30px;
+  font-size: 48px;
+  line-height: 1;
   height: 1em;
-  color: gold;
   position: relative;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  background: linear-gradient(
+    90deg,
+    gold 0%,
+    gold var(--rating-width, 100%),
+    #ddd var(--rating-width, 100%),
+    #ddd 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 5px;
 }
 
-.stars[data-rating="1"]:before {
-  content: "★";
-}
-.stars[data-rating="2"]:before {
-  content: "★★";
-}
-.stars[data-rating="3"]:before {
-  content: "★★★";
-}
-.stars[data-rating="4"]:before {
-  content: "★★★★";
-}
-.stars[data-rating="5"]:before {
+.stars::before,
+.stars::after {
   content: "★★★★★";
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
-.widget.average_card .fa.checked {
-  color: orange;
+.stars::before {
+  color: gold;
+  width: var(--rating-width, 0%);
+  overflow: hidden;
+}
+
+.stars::after {
+  color: #ddd;
+}
+
+.stars:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
 }
 
 .widget.average_card p {
-  font-size: 14px;
-  margin-top: 10px;
+  font-size: 18px;
+  margin-top: 20px;
 }
 
 @media (max-width: 768px) {
   .widget.average_card {
     width: 80%;
   }
+
+  .stars {
+    font-size: 54px;
+  }
 }
 
 @media (max-width: 480px) {
   .widget.average_card {
     width: 100%;
+  }
+
+  .stars {
+    font-size: 48px;
   }
 }

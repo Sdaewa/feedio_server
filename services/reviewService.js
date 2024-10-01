@@ -106,6 +106,19 @@ const recalculateAndUpdateRatingDistribution = async (productId) => {
   });
 };
 
+const calculateAverageRating = async (productId) => {
+  const product = await Product.findById(productId).populate("reviews");
+  if (!product || product.reviews.length === 0) {
+    return 0;
+  }
+
+  const totalRating = product.reviews.reduce(
+    (sum, review) => sum + review.rating,
+    0
+  );
+  return totalRating / product.reviews.length;
+};
+
 const create = async ({
   name,
   email,
@@ -156,6 +169,11 @@ const create = async ({
   product.reviews.push(newReview._id);
   await recalculateAndUpdateNps(productId);
   await recalculateAndUpdateRatingDistribution(productId);
+
+  const averageRating = await calculateAverageRating(productId);
+  console.log("averageRating", averageRating);
+  product.averageRating = averageRating;
+
   await product.save();
 
   if (user.notifyReview) {
@@ -213,6 +231,10 @@ const widgetReview = async ({
   product.reviews.push(newReview._id);
   await recalculateAndUpdateNps(productId);
   await recalculateAndUpdateRatingDistribution(productId);
+
+  const averageRating = await calculateAverageRating(productId);
+  product.averageRating = averageRating;
+
   await product.save();
 
   sendEmail({
@@ -260,6 +282,11 @@ const deleteOne = async (reviewId) => {
 
   await recalculateAndUpdateNps(product._id);
   await recalculateAndUpdateRatingDistribution(product._id);
+
+  const averageRating = await calculateAverageRating(product._id);
+  product.averageRating = averageRating;
+
+  await product.save();
   await Review.deleteOne({ _id: reviewId });
 
   return "Review deleted successfully";
