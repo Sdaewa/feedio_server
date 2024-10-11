@@ -180,6 +180,12 @@ const generateWidgetRepresentation = async (
     return ret;
   });
 
+  handlebars.registerHelper("times", function (n, block) {
+    var accum = "";
+    for (var i = 0; i < n; ++i) accum += block.fn(i);
+    return accum;
+  });
+
   handlebars.registerHelper("range", function (start, end) {
     var rangeArray = [];
     for (var i = start; i < end; ++i) {
@@ -207,6 +213,15 @@ const generateWidgetRepresentation = async (
   handlebars.registerHelper("multiply", function (a, b) {
     return a * b;
   });
+
+  handlebars.registerHelper("subtract", function (a, b) {
+    return a - b;
+  });
+
+  handlebars.registerHelper("lte", function (a, b) {
+    return a < b;
+  });
+
   try {
     templateString = fs.readFileSync(templatePath, "utf-8");
 
