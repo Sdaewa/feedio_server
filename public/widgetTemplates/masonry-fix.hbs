@@ -1,15 +1,12 @@
-<div class="widget masonry_fix" style="--background-color: {{background}}; --text-color: {{text}}">
+<div class="widget masonry_fix" style="--background-color: {{background}}; --text-color: {{text}}" aria-label="Customer Reviews">
   {{#each reviewsData}}
-    <div class="review-item">
-      <div class="avatar-container">
-        <img class="avatar" src="https://ui-avatars.com/api/?name={{this.name}}&background=random&color=fff" alt="{{this.name}}'s avatar">
-        <span class="reviewer-name">{{this.name}}</span>
-      </div>
+    <div class="review-item" tabindex="0">
+      <span class="reviewer-name">{{this.name}}</span>
       <p class="review-content">{{this.content}}</p>
+      <div class="stars" style="--rating-width: {{multiply this.rating 20}}%" aria-label="{{this.rating}} out of 5 stars">★★★★★</div>
       <div class="review-footer">
-        <span class="stars" data-rating="{{this.rating}}"></span>
         {{#unless ../hideDate}}
-          <span class="review-date">{{this.createdAt}}</span>
+          <span class="review-date">{{formatDate this.createdAt}}</span>
         {{/unless}}
       </div>
     </div>

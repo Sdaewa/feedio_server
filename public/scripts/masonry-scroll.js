@@ -2,65 +2,52 @@ document.addEventListener("DOMContentLoaded", function () {
   const widgets = document.querySelectorAll(".widget.masonry_scroll");
 
   widgets.forEach((widget) => {
-    const container = widget.querySelector(".scroll-container");
-    const content = widget.querySelector(".scroll-content");
-    const scrollSpeed = parseInt(widget.dataset.scrollSpeed) || 50;
-    const autoScroll = widget.dataset.autoScroll === "true";
+    const scrollContainer = widget.querySelector(".scroll-container");
+    const scrollContent = widget.querySelector(".scroll-content");
+    const reviewItems = scrollContent.querySelectorAll(".review-item");
 
-    let scrollInterval;
+    if (reviewItems.length <= 3) {
+      return; // No need to scroll if there are 3 or fewer items
+    }
+
+    const containerHeight = scrollContainer.offsetHeight;
+    const contentHeight = scrollContent.offsetHeight;
+    let currentScroll = 0;
     let isPaused = false;
+    const scrollSpeed = 0.5; // Pixels to scroll per frame
 
-    function setupScroll() {
-      const containerHeight = container.offsetHeight;
-      const contentHeight = content.offsetHeight;
+    function autoScroll() {
+      if (isPaused) {
+        requestAnimationFrame(autoScroll);
+        return;
+      }
 
-      if (contentHeight <= containerHeight) {
-        while (content.offsetHeight <= containerHeight * 2) {
-          const clone = content.cloneNode(true);
-          container.appendChild(clone);
-        }
+      currentScroll += scrollSpeed;
+      if (currentScroll >= contentHeight) {
+        currentScroll = 0;
+        scrollContent.style.transition = "none";
+        scrollContent.style.transform = "translateY(0)";
+        // Force a reflow
+        scrollContent.offsetHeight;
+        scrollContent.style.transition = "transform 0.5s ease";
       } else {
-        const clone = content.cloneNode(true);
-        container.appendChild(clone);
+        scrollContent.style.transform = `translateY(-${currentScroll}px)`;
       }
+
+      requestAnimationFrame(autoScroll);
     }
 
-    function scrollContent() {
-      if (isPaused) return;
+    // Start auto-scrolling
+    requestAnimationFrame(autoScroll);
 
-      const containerHeight = container.offsetHeight;
-      const contentHeight = content.offsetHeight;
-      const currentPosition = parseFloat(getComputedStyle(content).top) || 0;
-
-      if (Math.abs(currentPosition) >= contentHeight / 2) {
-        content.style.transition = "none";
-        content.style.top = "0px";
-        content.offsetHeight;
-        content.style.transition = "top 0.5s linear";
-      } else {
-        content.style.top = `${currentPosition - 1}px`;
-      }
-    }
-
-    function startScrolling() {
-      if (autoScroll) {
-        scrollInterval = setInterval(scrollContent, scrollSpeed);
-      }
-    }
-
-    function stopScrolling() {
-      clearInterval(scrollInterval);
-    }
-
-    container.addEventListener("mouseenter", () => {
+    // Pause scrolling on hover
+    scrollContainer.addEventListener("mouseenter", () => {
       isPaused = true;
     });
 
-    container.addEventListener("mouseleave", () => {
+    // Resume scrolling when not hovering
+    scrollContainer.addEventListener("mouseleave", () => {
       isPaused = false;
     });
-
-    setupScroll();
-    startScrolling();
   });
 });

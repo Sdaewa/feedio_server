@@ -2,8 +2,14 @@
   class="widget average_card"
   style="--background-color: {{background}}; --text-color: {{text}}"
 >
-  <span class="stars" data-rating="{{toFixed productData.rating}}"></span>
-  <p>{{toFixed productData.rating 1}}
+  <div
+    class="stars"
+    style="--rating-width: {{multiply
+      (toFixed productData.averageRating 1)
+      20
+    }}%;"
+  >★★★★★</div>
+  <p>{{toFixed productData.averageRating 1}}
     average based on
     {{reviewsLength}}
     reviews.</p>
