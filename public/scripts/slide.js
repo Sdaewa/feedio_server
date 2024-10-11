@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   carousels.forEach((carousel) => {
     const container = carousel.querySelector(".scroll-container");
     const content = carousel.querySelector(".scroll-content");
-    const items = content.querySelectorAll(".masonry-item");
+    const items = content.querySelectorAll(".review-item");
     const prevBtn = carousel.querySelector(".left-arrow-wrap");
     const nextBtn = carousel.querySelector(".right-arrow-wrap");
 
@@ -30,8 +30,15 @@ document.addEventListener("DOMContentLoaded", function () {
       goToSlide(currentIndex - 1);
     }
 
-    nextBtn.addEventListener("click", nextSlide);
-    prevBtn.addEventListener("click", prevSlide);
+    nextBtn.addEventListener("click", () => {
+      stopAutoScroll();
+      nextSlide();
+    });
+
+    prevBtn.addEventListener("click", () => {
+      stopAutoScroll();
+      prevSlide();
+    });
 
     const scrollSpeed = parseInt(carousel.dataset.scrollSpeed) || 5000;
     const autoScroll = carousel.dataset.autoScroll === "true";
@@ -49,7 +56,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     container.addEventListener("mouseenter", stopAutoScroll);
-    container.addEventListener("mouseleave", startAutoScroll);
+    container.addEventListener("mouseleave", () => {
+      setTimeout(startAutoScroll, 2000);
+    });
 
     startAutoScroll();
   });

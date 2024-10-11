@@ -5,12 +5,14 @@
         <div class="review-item" tabindex="0">
           <span class="reviewer-name">{{this.name}}</span>
           <p class="review-content">{{this.content}}</p>
-          <div class="stars" style="--rating-width: {{multiply this.rating 20}}%" aria-label="{{this.rating}} out of 5 stars">★★★★★</div>
-          <div class="review-footer">
-            {{#unless ../hideDate}}
-              <span class="review-date">{{formatDate this.createdAt}}</span>
-            {{/unless}}
+          <div class="stars" aria-label="{{this.rating}} out of 5 stars">
+            {{#times 5}}
+              <span class="star {{#if (lte @index ../rating)}}filled{{/if}}"></span>
+            {{/times}}
           </div>
+          {{#unless ../hideDate}}
+            <span class="review-date">{{formatDate this.createdAt}}</span>
+          {{/unless}}
         </div>
       {{/each}}
     </div>
