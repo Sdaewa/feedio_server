@@ -168,18 +168,6 @@ const generateWidgetRepresentation = async (
       throw new Error("Invalid widget type");
   }
 
-  handlebars.registerHelper("repeat", function (n, value) {
-    let ret = "";
-    let i = 0;
-
-    if (arguments.length === 3) {
-      i = value;
-      n = n - value;
-    }
-
-    return ret;
-  });
-
   handlebars.registerHelper("times", function (n, block) {
     var accum = "";
     for (var i = 0; i < n; ++i) accum += block.fn(i);
@@ -194,7 +182,7 @@ const generateWidgetRepresentation = async (
     return rangeArray;
   });
 
-  handlebars.registerHelper("lte", function (value1, value2, options) {
+  handlebars.registerHelper("lte", function (value1, value2) {
     return value1 <= value2;
   });
 
@@ -234,7 +222,6 @@ const generateWidgetRepresentation = async (
       productData,
       productId,
       itemsPerView,
-      scrollSpeed,
       hideDate,
       type,
       autoScroll,

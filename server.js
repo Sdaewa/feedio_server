@@ -1,95 +1,106 @@
-const path = require("path");
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const dotenv = require("dotenv");
+require('dotenv').config();
+const validateEnv = require('./config/env-validation');
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const { logger } = require('./config/logger');
+const { versionCheck } = require('./middleware/api-version');
+const { serve: swaggerServe, setup: swaggerSetup } = require('./config/swagger');
+const { redisClient, CACHE_PREFIXES, TTL, cacheMiddleware } = require('./config/redis');
+const { setupIndexes } = require('./config/db-indexes');
+const compressionMiddleware = require('./middleware/compression');
+const securityMiddleware = require('./middleware/security');
+require('./scripts/schedule-backup');
 
-const userRoutes = require("./routes/users-route");
-const productRoutes = require("./routes/products-route");
-const reviewRoutes = require("./routes/reviews-route");
-const paymentRoutes = require("./routes/payments-route");
-const paymentController = require("./controllers/paymentController");
-const widgetRoutes = require("./routes/widget-route");
-const checkAuth = require("./middleware/check-auth");
-const checkUserStatus = require("./middleware/check-user-status");
+// Import routes
+const usersRoute = require('./routes/users-route');
+const productsRoute = require('./routes/products-route');
+const reviewsRoute = require('./routes/reviews-route');
+const paymentsRoute = require('./routes/payments-route');
 
 const app = express();
-const envPath = path.join(__dirname, ".env");
 
-dotenv.config({ path: envPath });
+// Validate environment variables before starting the server
+try {
+  validateEnv();
+} catch (error) {
+  console.error('Environment validation failed:', error.message);
+  process.exit(1);
+}
 
-app.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  paymentController.handleStripeWebhook
-);
-
-app.use(cors());
-
-app.use(
-  bodyParser.json({
-    verify: function (req, res, buf) {
-      req.rawBody = buf.toString();
-    },
-  })
-);
-
-app.use((req, res, next) => {
-  console.log(`${req.method} request to ${req.url}`);
-  next();
+// Rate limiter configuration
+const rateLimiter = rateLimit({
+  windowMs: process.env.RATE_LIMIT_WINDOW_MS || 900000, // 15 minutes
+  max: process.env.RATE_LIMIT_MAX_REQUESTS || 100
 });
 
-app.use(checkAuth);
-app.use(checkUserStatus);
+// Apply security middleware first
+securityMiddleware(app);
 
-app.use("/static", express.static(path.join(__dirname, "public")));
+// Other middleware
+app.use(compressionMiddleware);
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(rateLimiter);
+app.use(versionCheck);
 
-app.use("/api/users", userRoutes);
+// Cache middleware for specific routes
+app.use('/api/users', cacheMiddleware(CACHE_PREFIXES.USER, TTL.MEDIUM));
+app.use('/api/products', cacheMiddleware(CACHE_PREFIXES.PRODUCT, TTL.MEDIUM));
+app.use('/api/reviews', cacheMiddleware(CACHE_PREFIXES.REVIEW, TTL.SHORT));
+app.use('/api/payments', cacheMiddleware(CACHE_PREFIXES.PAYMENT, TTL.MEDIUM));
 
-app.use("/api/users/:id/products", productRoutes);
+// Routes
+app.use('/api/users', usersRoute);
+app.use('/api/products', productsRoute);
+app.use('/api/reviews', reviewsRoute);
+app.use('/api/payments', paymentsRoute);
 
-app.use(
-  "/api/users/:id/products/:pid/reviews",
-  (req, res, next) => {
-    req.mainParams = req.params;
-    next();
-  },
-  reviewRoutes
-);
+// Swagger documentation
+app.use('/api-docs', swaggerServe, swaggerSetup);
 
-app.use(
-  "/api/users/:id/products/:pid/widgets",
-  (req, res, next) => {
-    req.mainParams = req.params;
-    next();
-  },
-  widgetRoutes
-);
-
-app.use("/api/users/:id/payments", paymentRoutes);
-
-app.use((req, res, next) => {
-  console.log(`Received ${req.method} request to ${req.url}`);
-  next();
-});
-
-app.use(
-  "/api/collection-feedback",
-  (req, res, next) => {
-    next();
-  },
-  reviewRoutes
-);
-
+// Database connection
 mongoose
   .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    ssl: process.env.NODE_ENV === 'production',
+    authSource: 'admin',
+    retryWrites: true,
+    w: 'majority',
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
   })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("Could not connect to MongoDB", err));
+  .then(async () => {
+    logger.info("Connected to MongoDB");
+    // Set up database indexes
+    await setupIndexes();
+    logger.info("Database indexes configured");
+  })
+  .catch((err) => {
+    logger.error("Could not connect to MongoDB", err);
+    process.exit(1);
+  });
 
-app.listen(process.env.PORT, () =>
-  console.log(`Server running on port ${process.env.PORT}`)
+const server = app.listen(process.env.PORT, () =>
+  logger.info(`Server running on port ${process.env.PORT}`)
 );
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    logger.info('HTTP server closed');
+    mongoose.connection.close(false, () => {
+      logger.info('MongoDB connection closed');
+      redisClient.quit(() => {
+        logger.info('Redis connection closed');
+        process.exit(0);
+      });
+    });
+  });
+});
