@@ -43,9 +43,9 @@ router.post(
 
 router.post("/:rid/favorite", reviewController.updateFavoriteStatus);
 
-router.get("/keywords", reviewController.getWordCloudData);
+router.get("/product/:pid/keywords", reviewController.getWordCloudData);
 
-router.get("/trends", reviewController.getRatingsTrend);
+router.get("/product/:pid/trends", reviewController.getRatingsTrend);
 
 router.delete("/:rid", reviewController.deleteReview);
 

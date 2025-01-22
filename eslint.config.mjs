@@ -7,21 +7,26 @@ export default [
     files: ["**/*.js"],
     ignores: ["**/__tests__/**"],
     languageOptions: {
-      ecmaVersion: 2021,
-      sourceType: "module",
+      ecmaVersion: 2022,
+      sourceType: "commonjs",
       globals: {
         require: "readonly",
         module: "readonly",
         process: "readonly",
         __dirname: "readonly",
         console: "readonly",
-        // Add Node.js globals
+        // Node.js globals
         Buffer: "readonly",
         setTimeout: "readonly",
         clearTimeout: "readonly",
         setInterval: "readonly",
         clearInterval: "readonly",
         global: "readonly",
+        // Browser globals
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
+        fetch: "readonly",
       },
     },
     plugins: {
@@ -33,6 +38,15 @@ export default [
       "import/named": "error",
       "import/default": "error",
       "import/namespace": "error",
+      "import/extensions": "off",
+      "no-restricted-syntax": "off",
+    },
+    settings: {
+      "import/resolver": {
+        node: {
+          extensions: [".js", ".mjs"],
+        },
+      },
     },
   },
   {

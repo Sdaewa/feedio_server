@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
@@ -54,8 +54,34 @@ const register = async ({ name, email, password, company, termsAccepted }) => {
   };
 };
 
+const searchUsers = async (query) => {
+  const searchCriteria = {};
+  
+  if (query.email) {
+    searchCriteria.email = new RegExp(query.email, 'i');
+  }
+  
+  if (query.name) {
+    searchCriteria.name = new RegExp(query.name, 'i');
+  }
+  
+  if (query.membershipStatus) {
+    searchCriteria.membershipStatus = query.membershipStatus;
+  }
+
+  const users = await User.find(searchCriteria)
+    .select('name email membershipStatus products')
+    .populate('products', 'name description')
+    .lean();
+
+  return users;
+};
+
 const login = async ({ email, password }) => {
-  const existingUser = await User.findOne({ email }).populate("products");
+  const existingUser = await User.findOne({ email })
+    .select('password name email membershipStatus products')
+    .lean();
+
   if (!existingUser) {
     throw new Error("User doesn't exist");
   }
@@ -71,18 +97,19 @@ const login = async ({ email, password }) => {
     { expiresIn: "24h" }
   );
 
+  const { password: _, ...userWithoutPassword } = existingUser;
+
   return {
-    userId: existingUser._id,
-    name: existingUser.name,
-    email: existingUser.email,
+    ...userWithoutPassword,
     token,
-    membershipStatus: existingUser.membershipStatus,
-    products: existingUser.products,
   };
 };
 
 const getById = async (id) => {
-  const user = await User.findById(id).populate("products");
+  const user = await User.findById(id)
+    .select('name email membershipStatus products notifyAccount notifyReview trialEndsAt membershipEndsAt cancellationPending')
+    .populate('products', 'name description')
+    .lean();
   if (!user) {
     throw new Error("User not found");
   }
@@ -109,7 +136,7 @@ const update = async ({
   notifyAccount,
   notifyReview,
 }) => {
-  const user = await User.findById(id);
+  const user = await User.findById(id).select('+password email name notifyAccount notifyReview');
   if (!user) {
     throw new Error("User not found");
   }
@@ -122,7 +149,7 @@ const update = async ({
   }
 
   if (email && email !== user.email) {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email }).select('_id').lean();
     if (existingUser && existingUser._id.toString() !== id) {
       throw new Error("Email already in use");
     }
@@ -153,7 +180,7 @@ const update = async ({
 };
 
 const requestPasswordReset = async (email) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select('email resetPasswordToken resetPasswordExpires');
   if (!user) {
     return {
       message:
@@ -189,7 +216,7 @@ const resetPassword = async (token, newPassword) => {
   const user = await User.findOne({
     resetPasswordToken: token,
     resetPasswordExpires: { $gt: Date.now() },
-  });
+  }).select('password resetPasswordToken resetPasswordExpires');
 
   if (!user) {
     throw new Error("Invalid or expired password reset token");
@@ -206,7 +233,7 @@ const resetPassword = async (token, newPassword) => {
 };
 
 const deleteUser = async (id) => {
-  const user = await User.findById(id);
+  const user = await User.findById(id).select('products').lean();
 
   if (!user) {
     throw new Error("User not found");
@@ -216,17 +243,20 @@ const deleteUser = async (id) => {
     (product) => new mongoose.Types.ObjectId(product)
   );
 
-  await Review.deleteMany({ product: { $in: productIds } });
-  await Widget.deleteMany({ product: { $in: productIds } });
-  await Product.deleteMany({ _id: { $in: productIds } });
-  await Payment.deleteMany({ user: id });
-  await User.deleteOne({ _id: id });
+  await Promise.all([
+    Review.deleteMany({ product: { $in: productIds } }),
+    Widget.deleteMany({ product: { $in: productIds } }),
+    Product.deleteMany({ _id: { $in: productIds } }),
+    Payment.deleteMany({ user: id }),
+    User.deleteOne({ _id: id })
+  ]);
 
   return { message: "User and associated data deleted successfully" };
 };
 
 const updateUserMembershipStatus = async (userId) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId)
+    .select('trialEndsAt membershipEndsAt membershipStatus cancellationPending stripeSubscriptionId');
   if (!user) return;
 
   const now = new Date();
@@ -259,4 +289,5 @@ module.exports = {
   resetPassword,
   deleteUser,
   updateUserMembershipStatus,
+  searchUsers,
 };
