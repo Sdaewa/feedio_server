@@ -120,7 +120,7 @@ exports.getWordCloudData = async (req, res, next) => {
 };
 
 exports.getRatingsTrend = async (req, res) => {
-  const productId = req.params.pid;
+  const productId = req.mainParams.pid;
   const startDate = req.query.startDate;
   const endDate = req.query.endDate;
 
