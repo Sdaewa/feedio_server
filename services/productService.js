@@ -46,6 +46,7 @@ const getAll = async (userId) => {
 
 const getById = async (productId) => {
   const product = await Product.findById(productId);
+  console.log("service", product);
   if (!product) {
     throw new Error("Product not found");
   }

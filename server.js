@@ -13,7 +13,7 @@ const compressionMiddleware = require('./middleware/compression');
 const securityMiddleware = require('./middleware/security');
 require('./scripts/schedule-backup');
 
-// Import routes
+
 const usersRoute = require('./routes/users-route');
 const productsRoute = require('./routes/products-route');
 const reviewsRoute = require('./routes/reviews-route');
@@ -40,6 +40,7 @@ securityMiddleware(app);
 
 // Other middleware
 app.use(compressionMiddleware);
+app.use(express.json());
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true,
@@ -67,7 +68,7 @@ app.use('/api-docs', swaggerServe, swaggerSetup);
 // Database connection
 mongoose
   .connect(process.env.MONGODB_URI, {
-    ssl: process.env.NODE_ENV === 'production',
+    tls: true,
     authSource: 'admin',
     retryWrites: true,
     w: 'majority',

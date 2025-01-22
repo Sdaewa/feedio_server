@@ -35,7 +35,7 @@
     "net-promoter-score": "^0.0.2",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.7",
-    "path-to-regexp": "^6.2.1",
+    "path-to-regexp": "^3.2.0",
     "sentiment": "^5.0.2",
     "stripe": "^14.9.0",
     "swagger-jsdoc": "^6.2.8",

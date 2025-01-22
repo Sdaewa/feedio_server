@@ -32,7 +32,7 @@ exports.createProduct = async (req, res) => {
 };
 
 exports.getAllProducts = async (req, res) => {
-  const userId = req.userData.userId;
+  const userId = req.query.userId || req.userData.userId;
   try {
     const products = await productService.getAll(userId);
     res.status(200).json({ products });
@@ -45,10 +45,10 @@ exports.getAllProducts = async (req, res) => {
 };
 
 exports.getProductById = async (req, res) => {
-  const { pid } = req.params;
 
+  const { productId } = req.params;
   try {
-    const product = await productService.getById(pid);
+    const product = await productService.getById(productId);
 
     res.status(200).json({ product });
   } catch (error) {

@@ -108,7 +108,7 @@ exports.deleteReview = async (req, res) => {
 };
 
 exports.getWordCloudData = async (req, res, next) => {
-  const productId = req.mainParams.pid;
+  const productId = req.params.pid;
 
   try {
     const wordCounts = await reviewService.getWordCloudData(productId);
@@ -120,7 +120,7 @@ exports.getWordCloudData = async (req, res, next) => {
 };
 
 exports.getRatingsTrend = async (req, res) => {
-  const productId = req.mainParams.pid;
+  const productId = req.params.pid;
   const startDate = req.query.startDate;
   const endDate = req.query.endDate;
 

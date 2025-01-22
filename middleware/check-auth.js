@@ -1,12 +1,27 @@
 const jwt = require("jsonwebtoken");
-const { pathToRegexp } = require("path-to-regexp");
 const { AppError } = require("./error-handler");
 const { logger } = require("../config/logger");
-const redisClient = require("../config/redis");
+const Redis = require('ioredis');
 
 const MAX_FAILED_ATTEMPTS = 5;
 const BLOCK_DURATION = 15 * 60; // 15 minutes in seconds
 
+let redisClient;
+try {
+  redisClient = new Redis({
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379,
+    retryStrategy: (times) => {
+      const delay = Math.min(times * 50, 2000);
+      return delay;
+    },
+    maxRetriesPerRequest: 3,
+  });
+} catch (error) {
+  logger.warn('Redis connection failed, proceeding without rate limiting');
+}
+
+// Simple exact match routes
 const UNPROTECTED_ROUTES = [
   "/api/collection-feedback/createReviewForWidget",
   "/api/collection-feedback/create-review-for-widget",
@@ -16,48 +31,68 @@ const UNPROTECTED_ROUTES = [
   "/api/users/request-password-reset",
   "/api/users/reset-password",
   "/api/widgets",
-  "/api/users/:id/products/:pid/widgets/:wid/serve",
   "/api/payments/webhook",
-  "/static/(.*)",
-  "/scripts/(.*)",
-  "/styles/(.*)",
-  "/",
-  "/api-docs/(.*)", // Allow Swagger docs
-  "/api/v1/health", // Allow basic health check
-  "/api/v1/health/detailed", // Allow detailed health check
+  "/api/v1/health",
+  "/api/v1/health/detailed",
+  "/"
 ];
 
 const isUnprotectedRoute = (path) => {
-  for (let route of UNPROTECTED_ROUTES) {
-    const regex = pathToRegexp(route);
-    if (regex.test(path)) {
-      return true;
-    }
+  // Check exact matches
+  if (UNPROTECTED_ROUTES.includes(path)) {
+    return true;
   }
+
+  // Check static file paths
+  if (path.startsWith('/static/') || 
+      path.startsWith('/scripts/') || 
+      path.startsWith('/styles/') || 
+      path.startsWith('/api-docs/')) {
+    return true;
+  }
+
+  // Check widget serve path
+  const widgetServePattern = /^\/api\/users\/[^/]+\/products\/[^/]+\/widgets\/[^/]+\/serve$/;
+  if (widgetServePattern.test(path)) {
+    return true;
+  }
+
   return false;
 };
 
 const checkBlockedIP = async (ip) => {
-  const key = `blocked:${ip}`;
-  const failedAttempts = await redisClient.get(key);
+  if (!redisClient) return;
   
-  if (failedAttempts && parseInt(failedAttempts) >= MAX_FAILED_ATTEMPTS) {
-    throw new AppError(429, "Too many failed attempts. Please try again later.");
+  const key = `blocked:${ip}`;
+  try {
+    const failedAttempts = await redisClient.get(key);
+    if (failedAttempts && parseInt(failedAttempts) >= MAX_FAILED_ATTEMPTS) {
+      throw new AppError(429, "Too many failed attempts. Please try again later.");
+    }
+  } catch (error) {
+    logger.warn('Redis operation failed in checkBlockedIP', error);
   }
 };
 
 const incrementFailedAttempts = async (ip) => {
+  if (!redisClient) return;
+
   const key = `blocked:${ip}`;
-  const attempts = await redisClient.get(key) || 0;
-  const newAttempts = parseInt(attempts) + 1;
-  
-  await redisClient.set(key, newAttempts, BLOCK_DURATION);
-  
-  if (newAttempts >= MAX_FAILED_ATTEMPTS) {
-    logger.warn(`IP ${ip} blocked due to too many failed attempts`);
+  try {
+    const attempts = await redisClient.get(key) || 0;
+    const newAttempts = parseInt(attempts) + 1;
+    
+    await redisClient.set(key, newAttempts, 'EX', BLOCK_DURATION);
+    
+    if (newAttempts >= MAX_FAILED_ATTEMPTS) {
+      logger.warn(`IP ${ip} blocked due to too many failed attempts`);
+    }
+    
+    return newAttempts;
+  } catch (error) {
+    logger.warn('Redis operation failed in incrementFailedAttempts', error);
+    return 0;
   }
-  
-  return newAttempts;
 };
 
 module.exports = async (req, res, next) => {
@@ -75,8 +110,8 @@ module.exports = async (req, res, next) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET, {
-      algorithms: ['HS256'], // Explicitly specify allowed algorithms
-      maxAge: '24h' // Maximum age of token
+      algorithms: ['HS256'],
+      maxAge: '24h'
     });
     
     // Check token expiration
@@ -85,14 +120,17 @@ module.exports = async (req, res, next) => {
       throw new AppError(401, "Token has expired");
     }
 
-    // Check if token has been blacklisted (e.g., after logout)
-    const isBlacklisted = await redisClient.get(`blacklist:${token}`);
-    if (isBlacklisted) {
-      throw new AppError(401, "Token has been invalidated");
+    // Check if token has been blacklisted
+    if (redisClient) {
+      const isBlacklisted = await redisClient.get(`blacklist:${token}`);
+      if (isBlacklisted) {
+        throw new AppError(401, "Token has been invalidated");
+      }
     }
 
     req.userData = { 
       userId: decodedToken.userId,
+      email: decodedToken.email,
       tokenExp: decodedToken.exp
     };
     next();

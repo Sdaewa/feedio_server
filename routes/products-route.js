@@ -6,6 +6,9 @@ const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
 
+// Protect all routes with authentication
+router.use(checkAuth);
+
 router.get("/all", productController.getAllProducts);
 
 router.post(
@@ -19,10 +22,10 @@ router.post(
   productController.createProduct
 );
 
-router.get("/:pid", productController.getProductById);
+router.get("/:productId", productController.getProductById);
 
 router.put(
-  "/:pid",
+  "/:productId",
   [
     check("name")
       .optional()
@@ -47,6 +50,6 @@ router.put(
   productController.updateProduct
 );
 
-router.delete("/:pid", productController.deleteProduct);
+router.delete("/:productId", productController.deleteProduct);
 
 module.exports = router;
