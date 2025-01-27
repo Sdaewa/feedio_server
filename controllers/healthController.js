@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const os = require('os');
-const redisClient = require('../config/redis');
 const { logger } = require('../config/logger');
 
 /**
@@ -47,23 +46,18 @@ exports.detailedCheck = async (req, res) => {
         status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         name: mongoose.connection.name,
         host: mongoose.connection.host
-      },
-      redis: {
-        status: redisClient.isReady ? 'connected' : 'disconnected',
-        retryCount: redisClient.retryCount
       }
     }
   };
 
-  // Check if any service is down
-  if (mongoose.connection.readyState !== 1 || !redisClient.isReady) {
+  // Check if database is down
+  if (mongoose.connection.readyState !== 1) {
     health.status = 'degraded';
   }
 
-  // Add response times
+  // Add response time
   health.responseTime = {
-    database: await checkDatabaseResponseTime(),
-    redis: await checkRedisResponseTime()
+    database: await checkDatabaseResponseTime()
   };
 
   logger.info('Health check completed', { health });
@@ -82,22 +76,6 @@ async function checkDatabaseResponseTime() {
     return seconds * 1000 + nanoseconds / 1000000; // Convert to milliseconds
   } catch (error) {
     logger.error('Database ping failed', { error });
-    return -1;
-  }
-}
-
-/**
- * Check Redis response time
- * @returns {Promise<number>} Response time in milliseconds
- */
-async function checkRedisResponseTime() {
-  const start = process.hrtime();
-  try {
-    await redisClient.ping();
-    const [seconds, nanoseconds] = process.hrtime(start);
-    return seconds * 1000 + nanoseconds / 1000000; // Convert to milliseconds
-  } catch (error) {
-    logger.error('Redis ping failed', { error });
     return -1;
   }
 } 
