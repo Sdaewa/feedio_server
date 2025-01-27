@@ -7,12 +7,10 @@ const rateLimit = require('express-rate-limit');
 const { logger } = require('./config/logger');
 const { versionCheck } = require('./middleware/api-version');
 const { serve: swaggerServe, setup: swaggerSetup } = require('./config/swagger');
-const { redisClient, CACHE_PREFIXES, TTL, cacheMiddleware } = require('./config/redis');
 const { setupIndexes } = require('./config/db-indexes');
 const compressionMiddleware = require('./middleware/compression');
 const securityMiddleware = require('./middleware/security');
 require('./scripts/schedule-backup');
-
 
 const usersRoute = require('./routes/users-route');
 const productsRoute = require('./routes/products-route');
@@ -49,12 +47,6 @@ app.use(cors({
 }));
 app.use(rateLimiter);
 app.use(versionCheck);
-
-// Cache middleware for specific routes
-app.use('/api/users', cacheMiddleware(CACHE_PREFIXES.USER, TTL.MEDIUM));
-app.use('/api/products', cacheMiddleware(CACHE_PREFIXES.PRODUCT, TTL.MEDIUM));
-app.use('/api/reviews', cacheMiddleware(CACHE_PREFIXES.REVIEW, TTL.SHORT));
-app.use('/api/payments', cacheMiddleware(CACHE_PREFIXES.PAYMENT, TTL.MEDIUM));
 
 // Routes
 app.use('/api/users', usersRoute);
@@ -98,10 +90,7 @@ process.on('SIGTERM', () => {
     logger.info('HTTP server closed');
     mongoose.connection.close(false, () => {
       logger.info('MongoDB connection closed');
-      redisClient.quit(() => {
-        logger.info('Redis connection closed');
-        process.exit(0);
-      });
+      process.exit(0);
     });
   });
 });

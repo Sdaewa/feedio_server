@@ -10,10 +10,7 @@ const validateEnv = () => {
     'FRONTEND_URL',
     'CLIENT_URL',
     'EMAIL_USERNAME',
-    'EMAIL_PASSWORD',
-    'REDIS_HOST',
-    'REDIS_PORT',
-    'REDIS_TTL'
+    'EMAIL_PASSWORD'
   ];
 
   const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -41,11 +38,6 @@ const validateEnv = () => {
     new URL(process.env.CLIENT_URL);
   } catch (error) {
     throw new Error('Invalid FRONTEND_URL or CLIENT_URL format');
-  }
-
-  const redisTTL = parseInt(process.env.REDIS_TTL);
-  if (isNaN(redisTTL) || redisTTL <= 0) {
-    throw new Error('Invalid REDIS_TTL value');
   }
 };
 
