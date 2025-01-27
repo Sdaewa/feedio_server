@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const redisClient = require('../config/redis');
 const logger = require('../config/logger');
 const { listBackups } = require('./backup');
 
@@ -18,33 +17,6 @@ async function checkMongoDB() {
     if (status.status === 'connected') {
       const start = process.hrtime();
       await mongoose.connection.db.admin().ping();
-      const [seconds, nanoseconds] = process.hrtime(start);
-      status.responseTime = seconds * 1000 + nanoseconds / 1000000;
-    }
-
-    return status;
-  } catch (error) {
-    return {
-      status: 'error',
-      error: error.message
-    };
-  }
-}
-
-/**
- * Check Redis connection
- * @returns {Promise<Object>} Connection status
- */
-async function checkRedis() {
-  try {
-    const status = {
-      status: redisClient.isReady ? 'connected' : 'disconnected',
-      retryCount: redisClient.retryCount
-    };
-
-    if (status.status === 'connected') {
-      const start = process.hrtime();
-      await redisClient.ping();
       const [seconds, nanoseconds] = process.hrtime(start);
       status.responseTime = seconds * 1000 + nanoseconds / 1000000;
     }
@@ -90,7 +62,6 @@ async function runHealthCheck() {
     uptime: process.uptime(),
     services: {
       mongodb: await checkMongoDB(),
-      redis: await checkRedis(),
       backups: checkBackups()
     }
   };
@@ -120,6 +91,5 @@ if (require.main === module) {
 module.exports = {
   runHealthCheck,
   checkMongoDB,
-  checkRedis,
   checkBackups
 }; 
