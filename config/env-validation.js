@@ -7,7 +7,6 @@ const validateEnv = () => {
     'MONGODB_URI',
     'JWT_SECRET',
     'JWT_EXPIRY',
-    'FRONTEND_URL',
     'CLIENT_URL',
     'EMAIL_USERNAME',
     'EMAIL_PASSWORD'
@@ -34,10 +33,9 @@ const validateEnv = () => {
   }
 
   try {
-    new URL(process.env.FRONTEND_URL);
     new URL(process.env.CLIENT_URL);
   } catch (error) {
-    throw new Error('Invalid FRONTEND_URL or CLIENT_URL format');
+    throw new Error('Invalid CLIENT_URL format');
   }
 };
 
