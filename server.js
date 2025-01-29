@@ -19,7 +19,6 @@ const paymentsRoute = require('./routes/payments-route');
 
 const app = express();
 
-// Validate environment variables before starting the server
 try {
   validateEnv();
 } catch (error) {
@@ -27,16 +26,16 @@ try {
   process.exit(1);
 }
 
-// Rate limiter configuration
+
 const rateLimiter = rateLimit({
   windowMs: process.env.RATE_LIMIT_WINDOW_MS || 900000, // 15 minutes
   max: process.env.RATE_LIMIT_MAX_REQUESTS || 100
 });
 
-// Apply security middleware first
+
 securityMiddleware(app);
 
-// Other middleware
+
 app.use(compressionMiddleware);
 app.use(express.json());
 app.use(cors({
