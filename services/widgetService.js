@@ -17,38 +17,47 @@ const generateWidgetConfig = async (
   text,
   embedLocation
 ) => {
-  let widget = await Widget.findOne({
-    productId,
-    type,
-  });
-
-  if (widget) {
-    widget.scrollSpeed = scrollSpeed;
-    widget.hideDate = hideDate;
-    widget.type = type;
-    widget.autoScroll = autoScroll;
-    widget.backgroundColor = background;
-    widget.textColor = text;
-    widget.location = embedLocation;
-  } else {
-    widget = new Widget({
-      product: productId,
-      scrollSpeed: scrollSpeed,
-      hideDate: hideDate,
-      type: type,
-      autoScroll: autoScroll,
-      backgroundColor: background,
-      textColor: text,
-      location: embedLocation,
+  try {
+    let widget = await Widget.findOne({
+      productId,
+      type,
     });
+
+    if (widget) {
+      widget.scrollSpeed = scrollSpeed;
+      widget.hideDate = hideDate;
+      widget.type = type;
+      widget.autoScroll = autoScroll;
+      widget.backgroundColor = background;
+      widget.textColor = text;
+      widget.location = embedLocation;
+    } else {
+      widget = new Widget({
+        product: productId,
+        scrollSpeed: scrollSpeed,
+        hideDate: hideDate,
+        type: type,
+        autoScroll: autoScroll,
+        backgroundColor: background,
+        textColor: text,
+        location: embedLocation,
+      });
+    }
+
+    await widget.save();
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error(`Product not found with ID: ${productId}`);
+    }
+
+    product.widgets.push(widget._id);
+    await product.save();
+
+    return widget;
+  } catch (error) {
+    throw error;
   }
-  await widget.save();
-
-  const product = await Product.findById(productId);
-  product.widgets.push(widget._id);
-  await product.save();
-
-  return widget;
 };
 
 const getWidgets = async (productId) => {
@@ -64,21 +73,61 @@ const getWidgets = async (productId) => {
   }
 };
 
-const getWidgetConfig = async (widgetId, productId) => {
+const getWidgetConfig = async (widgetId) => {
   const widgetObjectId = new mongoose.Types.ObjectId(widgetId);
-  const productObjectId = new mongoose.Types.ObjectId(productId);
 
   try {
-    const widget = await Widget.findOne({
-      _id: widgetObjectId,
-      product: productObjectId,
-    });
-
+    const widget = await Widget.findById(widgetObjectId);
     return widget;
   } catch (error) {
     console.error("Error fetching widget config:", error);
     throw error;
   }
+};
+
+const getWidgetRepresentation = async (widget, reviews, options) => {
+  const { type, hideDate, autoScroll, backgroundColor, textColor } = options;
+  
+  let html = '';
+  let script = '';
+  
+  switch (type) {
+    case 'carousel':
+      html = getCarouselHtml(reviews, { hideDate, autoScroll });
+      script = `
+        <script src="/scripts/slide.js"></script>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initCarousel === 'function') {
+              initCarousel();
+            }
+          });
+        </script>
+      `;
+      break;
+    // ... other cases ...
+  }
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/styles/${type}.css">
+        <style>
+          body {
+            background-color: ${backgroundColor || '#ffffff'};
+            color: ${textColor || '#000000'};
+          }
+        </style>
+      </head>
+      <body>
+        ${html}
+        ${script}
+      </body>
+    </html>
+  `;
 };
 
 const generateWidgetRepresentation = async (
@@ -236,7 +285,18 @@ const generateWidgetRepresentation = async (
       const scriptContent = fs.readFileSync(scriptPath, "utf-8");
       widgetRepresentation += `<script>${scriptContent}</script>`;
 
-      widgetRepresentation += `<script>document.addEventListener('DOMContentLoaded', function() { const carousel = document.querySelector('.widget.carousel'); if (carousel) { initCarousel(carousel); } });</script>`;
+      if (type === 'carousel') {
+        widgetRepresentation += `
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const carousel = document.querySelector('.widget.carousel');
+              if (carousel) {
+                initCarousel(carousel);
+              }
+            });
+          </script>
+        `;
+      }
     }
   } catch (error) {
     console.error("Error compiling the Handlebars template:", error);

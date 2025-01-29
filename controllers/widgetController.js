@@ -1,25 +1,33 @@
 const widgetService = require("../services/widgetService");
 
 exports.generateWidget = async (req, res, next) => {
-  const productId = req.mainParams.pid;
-  const type = req.body.type;
-  const hideDate = req.body.date;
-  const scrollSpeed = req.body.speed;
-  const autoScroll = req.body.autoScroll;
-  const background = req.body.background;
-  const text = req.body.text;
-  const embedLocation = req.body.location;
+  const { 
+    productId,
+    userId,
+    type,
+    hideDate,
+    autoScroll,
+    backgroundColor,
+    textColor,
+    location
+  } = req.body;
+
+  if (!productId || !userId || !type) {
+    return res.status(400).json({ 
+      message: "Missing required fields: productId, userId, and type are required" 
+    });
+  }
 
   try {
     const widgetData = await widgetService.generateWidgetConfig(
       productId,
-      scrollSpeed,
+      0.5, // default scroll speed
       hideDate,
       type,
       autoScroll,
-      background,
-      text,
-      embedLocation
+      backgroundColor,
+      textColor,
+      location
     );
 
     res.status(200).json({
@@ -27,10 +35,9 @@ exports.generateWidget = async (req, res, next) => {
       widgetData,
     });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
-      .json({ message: "Error saving widget configuration.", error });
+      .json({ message: "Error saving widget configuration.", error: error.message });
   }
 };
 
@@ -68,31 +75,25 @@ exports.getWidget = async (req, res, next) => {
 
 exports.serveWidget = async (req, res, next) => {
   const widgetId = req.params.wid;
-  const productId = req.mainParams.pid;
 
   try {
-    const widgetConfig = await widgetService.getWidgetConfig(
-      widgetId,
-      productId
-    );
+    const widgetConfig = await widgetService.getWidgetConfig(widgetId);
 
     if (!widgetConfig) {
       return res.status(404).json({
-        message:
-          "No widget configuration found for the specified widget and product.",
+        message: "No widget configuration found for the specified widget.",
       });
     }
 
-    const widgetRepresentation =
-      await widgetService.generateWidgetRepresentation(
-        productId,
-        widgetConfig.scrollSpeed,
-        widgetConfig.hideDate,
-        widgetConfig.type,
-        widgetConfig.autoScroll,
-        widgetConfig.backgroundColor,
-        widgetConfig.textColor
-      );
+    const widgetRepresentation = await widgetService.generateWidgetRepresentation(
+      widgetConfig.product,
+      widgetConfig.scrollSpeed,
+      widgetConfig.hideDate,
+      widgetConfig.type,
+      widgetConfig.autoScroll,
+      widgetConfig.backgroundColor,
+      widgetConfig.textColor
+    );
 
     res.status(200).send(widgetRepresentation);
   } catch (error) {

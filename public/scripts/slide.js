@@ -1,65 +1,65 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const carousels = document.querySelectorAll(".widget.carousel");
+// Carousel initialization function that will be exposed globally
+function initCarousel() {
+  const slides = document.querySelectorAll(".slide");
+  const nextButton = document.querySelector(".btn-next");
+  const prevButton = document.querySelector(".btn-prev");
+  const autoScrollEnabled = document.querySelector(".carousel").dataset.autoscroll === "true";
+  
+  let curSlide = 0;
+  const maxSlide = slides.length - 1;
+  let autoScrollInterval;
 
-  carousels.forEach((carousel) => {
-    const container = carousel.querySelector(".scroll-container");
-    const content = carousel.querySelector(".scroll-content");
-    const items = content.querySelectorAll(".review-item");
-    const prevBtn = carousel.querySelector(".left-arrow-wrap");
-    const nextBtn = carousel.querySelector(".right-arrow-wrap");
-
-    let currentIndex = 0;
-    const itemCount = items.length;
-
-    function goToSlide(index) {
-      if (index < 0) {
-        index = itemCount - 1;
-      } else if (index >= itemCount) {
-        index = 0;
-      }
-      currentIndex = index;
-      const offset = -index * 100;
-      content.style.transform = `translateX(${offset}%)`;
-    }
-
-    function nextSlide() {
-      goToSlide(currentIndex + 1);
-    }
-
-    function prevSlide() {
-      goToSlide(currentIndex - 1);
-    }
-
-    nextBtn.addEventListener("click", () => {
-      stopAutoScroll();
-      nextSlide();
+  // Functions
+  const goToSlide = (slide) => {
+    slides.forEach((s, i) => {
+      s.style.transform = `translateX(${100 * (i - slide)}%)`;
     });
+  };
 
-    prevBtn.addEventListener("click", () => {
-      stopAutoScroll();
-      prevSlide();
-    });
+  const nextSlide = () => {
+    curSlide = curSlide === maxSlide ? 0 : curSlide + 1;
+    goToSlide(curSlide);
+  };
 
-    const scrollSpeed = parseInt(carousel.dataset.scrollSpeed) || 5000;
-    const autoScroll = carousel.dataset.autoScroll === "true";
+  const prevSlide = () => {
+    curSlide = curSlide === 0 ? maxSlide : curSlide - 1;
+    goToSlide(curSlide);
+  };
 
-    let autoScrollInterval;
-
-    function startAutoScroll() {
-      if (autoScroll) {
-        autoScrollInterval = setInterval(nextSlide, scrollSpeed);
-      }
+  const startAutoScroll = () => {
+    if (autoScrollEnabled) {
+      autoScrollInterval = setInterval(nextSlide, 3000);
     }
+  };
 
-    function stopAutoScroll() {
+  const stopAutoScroll = () => {
+    if (autoScrollInterval) {
       clearInterval(autoScrollInterval);
     }
+  };
 
-    container.addEventListener("mouseenter", stopAutoScroll);
-    container.addEventListener("mouseleave", () => {
-      setTimeout(startAutoScroll, 2000);
-    });
-
+  // Initialize
+  goToSlide(0);
+  
+  // Event listeners
+  nextButton?.addEventListener("click", () => {
+    stopAutoScroll();
+    nextSlide();
     startAutoScroll();
   });
-});
+
+  prevButton?.addEventListener("click", () => {
+    stopAutoScroll();
+    prevSlide();
+    startAutoScroll();
+  });
+
+  // Start auto-scroll if enabled
+  startAutoScroll();
+}
+
+// Auto-initialize when DOM is loaded
+document.addEventListener("DOMContentLoaded", initCarousel);
+
+// Make initCarousel available globally
+window.initCarousel = initCarousel;
