@@ -6,10 +6,11 @@ const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
 
-// Protect all routes with authentication
-router.use(checkAuth);
-
+// Public routes should come first
 router.get("/all", productController.getAllProducts);
+
+// Protect routes that need authentication
+router.use(checkAuth);
 
 router.post(
   "/createProduct",
@@ -22,6 +23,7 @@ router.post(
   productController.createProduct
 );
 
+// Parameter routes should come last
 router.get("/:productId", productController.getProductById);
 
 router.put(
