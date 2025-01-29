@@ -16,6 +16,7 @@ const usersRoute = require('./routes/users-route');
 const productsRoute = require('./routes/products-route');
 const reviewsRoute = require('./routes/reviews-route');
 const paymentsRoute = require('./routes/payments-route');
+const widgetRoute = require('./routes/widget-route');
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/api/users', usersRoute);
 app.use('/api/products', productsRoute);
 app.use('/api/reviews', reviewsRoute);
 app.use('/api/payments', paymentsRoute);
+app.use('/api/widgets', widgetRoute);
 
 // Swagger documentation
 app.use('/api-docs', swaggerServe, swaggerSetup);
