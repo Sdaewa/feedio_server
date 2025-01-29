@@ -3,6 +3,7 @@ const validateEnv = require('./config/env-validation');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
 const { logger } = require('./config/logger');
 const { versionCheck } = require('./middleware/api-version');
@@ -39,6 +40,16 @@ securityMiddleware(app);
 
 app.use(compressionMiddleware);
 app.use(express.json());
+
+// Serve static files with proper MIME types
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
+
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://feedio.app', 'https://www.feedio.app']

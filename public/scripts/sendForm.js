@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
       productId,
     };
 
-    fetch("/api/collection-feedback/create-review-for-widget", {
+    fetch("/api/reviews/create-review-for-widget", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
