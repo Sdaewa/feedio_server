@@ -42,7 +42,12 @@ exports.generateWidget = async (req, res, next) => {
 };
 
 exports.getWidgets = async (req, res) => {
-  const productId = req.mainParams.pid;
+  const { productId } = req.query;
+  
+  if (!productId) {
+    return res.status(400).json({ message: "Product ID is required" });
+  }
+
   try {
     const widgets = await widgetService.getWidgets(productId);
     res.json(widgets);
