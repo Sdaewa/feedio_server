@@ -50,7 +50,7 @@ exports.createReviewForWidget = async (req, res) => {
       productId,
       npsScore,
     });
-    console.log("Review created successfully:", newReview);
+
     res
       .status(201)
       .json({ message: "Review created successfully", review: newReview });

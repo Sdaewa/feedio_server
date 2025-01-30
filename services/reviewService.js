@@ -364,26 +364,29 @@ const getAddFieldsStage = (offsetHours) => ({
   },
 });
 
-const getGroupStage = (groupBy) => ({
-  $group: {
-    _id: {
-      year: { $year: "$localCreatedAt" },
-      month: { $month: "$localCreatedAt" },
-      day: { $dayOfMonth: "$localCreatedAt" },
-      [groupBy]: { [`$${groupBy}`]: "$localCreatedAt" },
-    },
-    averageRating: { $avg: "$rating" },
-    highestRating: { $max: "$rating" },
-    lowestRating: { $min: "$rating" },
-    count: { $sum: 1 },
-  },
-});
+const getGroupStage = (groupBy) => {
+  const groupStages = {
+    monthly: {
+      _id: {
+        year: { $year: "$localCreatedAt" },
+        month: { $month: "$localCreatedAt" }
+      },
+      averageRating: { $avg: "$rating" },
+      highestRating: { $max: "$rating" },
+      lowestRating: { $min: "$rating" },
+      count: { $sum: 1 }
+    }
+  };
+
+  return {
+    $group: groupStages[groupBy] || groupStages.monthly
+  };
+};
 
 const getSortStage = () => ({
   $sort: {
     "_id.year": 1,
-    "_id.month": 1,
-    "_id.day": 1,
+    "_id.month": 1
   },
 });
 
@@ -397,30 +400,30 @@ const getTrendsForPeriod = async (productId, start, end, groupBy) => {
     const groupStage = getGroupStage(groupBy);
     const sortStage = getSortStage();
 
-    const trends = await Review.aggregate([
-      matchStage,
-      addFieldsStage,
-      groupStage,
-      sortStage,
-    ]);
+    const pipeline = [matchStage, addFieldsStage, groupStage, sortStage];
+    const trends = await Review.aggregate(pipeline);
 
     return trends;
   } catch (err) {
-    console.error("Error during aggregation: ", err.message);
-    throw new Error("Unable to fetch ratings trend");
+    console.error("Error during aggregation:", err.message);
+    throw new Error(`Unable to fetch ratings trend: ${err.message}`);
   }
 };
 
 const getRatingsTrend = async (productId, startDate, endDate) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  try {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
 
-  end.setHours(23, 59, 59, 999);
+    const groupBy = "monthly";
+    const trends = await getTrendsForPeriod(productId, start, end, groupBy);
 
-  const groupBy = "dayOfMonth";
-  const trends = await getTrendsForPeriod(productId, start, end, groupBy);
-
-  return fillGaps(trends, start, end);
+    return trends;
+  } catch (error) {
+    console.error("Error fetching ratings trend:", error.message);
+    throw error;
+  }
 };
 
 const fillGaps = (trends, start, end) => {
