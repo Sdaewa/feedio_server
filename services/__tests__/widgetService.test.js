@@ -52,7 +52,6 @@ describe("Widget Service", () => {
       expect(mockWidget.scrollSpeed).toBe(0.5);
       expect(mockWidget.hideDate).toBe(false);
       expect(mockWidget.type).toBe("carousel");
-      expect(mockWidget.autoScroll).toBe(true);
       expect(mockWidget.backgroundColor).toBe("white");
       expect(mockWidget.textColor).toBe("black");
       expect(mockWidget.location).toBe("bottom");
@@ -93,7 +92,6 @@ describe("Widget Service", () => {
         scrollSpeed: 0.5,
         hideDate: false,
         type: "carousel",
-        autoScroll: true,
         backgroundColor: "white",
         textColor: "black",
         location: "bottom",
