@@ -12,7 +12,7 @@ const widgetSchema = new mongoose.Schema(
       type: String,
       enum: [
         "masonry_scroll",
-        "masonry_fix",
+        // "masonry_fix",
         "carousel",
         "average_card",
         "collect-feedback",
@@ -31,10 +31,7 @@ const widgetSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    autoScroll: {
-      type: Boolean,
-      default: false,
-    },
+
     backgroundColor: {
       type: String,
     },

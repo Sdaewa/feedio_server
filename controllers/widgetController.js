@@ -6,7 +6,6 @@ exports.generateWidget = async (req, res, next) => {
     userId,
     type,
     hideDate,
-    autoScroll,
     backgroundColor,
     textColor,
     location
@@ -24,7 +23,6 @@ exports.generateWidget = async (req, res, next) => {
       0.5, // default scroll speed
       hideDate,
       type,
-      autoScroll,
       backgroundColor,
       textColor,
       location

@@ -12,7 +12,6 @@ const generateWidgetConfig = async (
   scrollSpeed,
   hideDate,
   type,
-  autoScroll,
   background,
   text,
   embedLocation
@@ -27,7 +26,6 @@ const generateWidgetConfig = async (
       widget.scrollSpeed = scrollSpeed;
       widget.hideDate = hideDate;
       widget.type = type;
-      widget.autoScroll = autoScroll;
       widget.backgroundColor = background;
       widget.textColor = text;
       widget.location = embedLocation;
@@ -37,7 +35,6 @@ const generateWidgetConfig = async (
         scrollSpeed: scrollSpeed,
         hideDate: hideDate,
         type: type,
-        autoScroll: autoScroll,
         backgroundColor: background,
         textColor: text,
         location: embedLocation,
@@ -135,7 +132,6 @@ const generateWidgetRepresentation = async (
   scrollSpeed,
   hideDate,
   type,
-  autoScroll,
   background,
   text
 ) => {
@@ -177,14 +173,13 @@ const generateWidgetRepresentation = async (
       scriptPath = path.join(__dirname, "../public/scripts/masonry-scroll.js");
       break;
 
-    case "masonry_fix":
+    /* case "masonry_fix":
       templatePath = path.join(
         __dirname,
         "../public/widgetTemplates/masonry-fix.hbs"
       );
       stylePath = path.join(__dirname, "../public/styles/masonry-fix.css");
-
-      break;
+      break; */
 
     case "carousel":
       templatePath = path.join(
@@ -273,7 +268,6 @@ const generateWidgetRepresentation = async (
       itemsPerView,
       hideDate,
       type,
-      autoScroll,
       background,
       text,
       scrollSpeed: scrollSpeed || "0.5",
