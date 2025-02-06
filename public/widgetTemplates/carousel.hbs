@@ -1,26 +1,37 @@
-<div class="widget carousel" style="--background-color: {{background}}; --text-color: {{text}}" aria-label="Customer Reviews">
-  <div class="scroll-container">
-    <div class="scroll-content">
+<div class="widget carousel" style="--background-color: {{backgroundColor}}; --text-color: {{textColor}}" aria-label="Customer Reviews" data-autoscroll="{{autoScroll}}">
+  <div class="carousel-container">
+    <div class="carousel-track">
       {{#each reviewsData}}
-        <div class="review-item" tabindex="0">
-          <span class="reviewer-name">{{this.name}}</span>
-          <p class="review-content">{{this.content}}</p>
-          <div class="stars" aria-label="{{this.rating}} out of 5 stars">
-            {{#times 5}}
-              <span class="star {{#if (lte @index ../rating)}}filled{{/if}}"></span>
-            {{/times}}
+        <div class="carousel-slide" tabindex="0">
+          <div class="review-content-wrapper">
+            <span class="reviewer-name">{{this.name}}</span>
+            <p class="review-content">{{this.content}}</p>
+            <div class="review-footer">
+              <div class="stars" style="--rating-width: {{multiply this.rating 20}}%" aria-label="{{this.rating}} out of 5 stars">★★★★★</div>
+              {{#unless ../hideDate}}
+                <div class="review-date">{{formatDate this.createdAt}}</div>
+              {{/unless}}
+            </div>
           </div>
-          {{#unless ../hideDate}}
-            <span class="review-date">{{formatDate this.createdAt}}</span>
-          {{/unless}}
         </div>
       {{/each}}
     </div>
-  </div>
-  <div class="arrow-wrap left-arrow-wrap">
-    <div class="arrow" id="leftArrow"></div>
-  </div>
-  <div class="arrow-wrap right-arrow-wrap">
-    <div class="arrow" id="rightArrow"></div>
+    
+    <button class="carousel-button prev" aria-label="Previous slide">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/>
+      </svg>
+    </button>
+    <button class="carousel-button next" aria-label="Next slide">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/>
+      </svg>
+    </button>
+    
+    <div class="carousel-indicators">
+      {{#each reviewsData}}
+        <button class="indicator{{#if @first}} active{{/if}}" data-slide="{{@index}}" aria-label="Slide"></button>
+      {{/each}}
+    </div>
   </div>
 </div>

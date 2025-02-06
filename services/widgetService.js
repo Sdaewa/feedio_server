@@ -132,8 +132,9 @@ const generateWidgetRepresentation = async (
   scrollSpeed,
   hideDate,
   type,
-  background,
-  text
+  autoScroll,
+  backgroundColor,
+  textColor
 ) => {
   let widgetRepresentation;
   let templatePath;
@@ -268,8 +269,8 @@ const generateWidgetRepresentation = async (
       itemsPerView,
       hideDate,
       type,
-      background,
-      text,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
       scrollSpeed: scrollSpeed || "0.5",
     });
 
