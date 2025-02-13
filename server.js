@@ -21,6 +21,9 @@ const widgetRoute = require('./routes/widget-route');
 
 const app = express();
 
+// Trust proxy for platforms like Render that use reverse proxies
+app.set('trust proxy', 1);
+
 try {
   validateEnv();
 } catch (error) {
