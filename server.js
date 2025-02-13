@@ -52,7 +52,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://feedio.app', 'https://www.feedio.app']
+    ? ['https://feedio.app', 'https://www.feedio.app', 'https://feedio-staging.onrender.com', 'https://feedio-server.onrender.com']
     : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
