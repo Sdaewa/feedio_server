@@ -21,9 +21,6 @@ const widgetRoute = require('./routes/widget-route');
 
 const app = express();
 
-// Trust proxy for platforms like Render that use reverse proxies
-app.set('trust proxy', 1);
-
 try {
   validateEnv();
 } catch (error) {
@@ -31,27 +28,15 @@ try {
   process.exit(1);
 }
 
-// CORS configuration must come before other middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://feedio.app', 'https://www.feedio.app', 'https://feedio-staging.onrender.com', 'https://feedio-server.onrender.com']
-    : 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
-  exposedHeaders: ['Set-Cookie', 'Date', 'ETag'],
-  optionsSuccessStatus: 200
-}));
-
-// Handle preflight requests
-app.options('*', cors());
 
 const rateLimiter = rateLimit({
   windowMs: process.env.RATE_LIMIT_WINDOW_MS || 900000, // 15 minutes
   max: process.env.RATE_LIMIT_MAX_REQUESTS || 100
 });
 
+
 securityMiddleware(app);
+
 
 app.use(compressionMiddleware);
 app.use(express.json());
@@ -65,18 +50,14 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
-// Add cookie parser with secure settings
-app.use(require('cookie-parser')());
-
-// Configure global response headers for CORS
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
-  next();
-});
-
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://feedio.app', 'https://www.feedio.app']
+    : 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(rateLimiter);
 app.use(versionCheck);
 
