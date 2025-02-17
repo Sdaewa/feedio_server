@@ -31,27 +31,16 @@ try {
   process.exit(1);
 }
 
-// Apply CORS configuration first
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://feedio.app', 'https://www.feedio.app', 'https://feedio-staging.onrender.com', 'https://feedio-server.onrender.com']
-    : 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 204,
-  preflightContinue: false
-}));
-
-// Handle OPTIONS requests explicitly
-app.options('*', cors());
 
 const rateLimiter = rateLimit({
   windowMs: process.env.RATE_LIMIT_WINDOW_MS || 900000, // 15 minutes
   max: process.env.RATE_LIMIT_MAX_REQUESTS || 100
 });
 
+
 securityMiddleware(app);
+
+
 app.use(compressionMiddleware);
 app.use(express.json());
 
@@ -64,6 +53,34 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://feedio.app', 'https://www.feedio.app', 'https://feedio-staging.onrender.com', 'https://feedio-server.onrender.com']
+    : 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['set-cookie'],
+  optionsSuccessStatus: 204,
+  preflightContinue: false,
+  sameSite: 'none',
+  secure: process.env.NODE_ENV === 'production'
+}));
+
+// Add cookie parser with secure settings
+app.use(require('cookie-parser')());
+
+// Configure cookie settings
+app.use((req, res, next) => {
+  res.cookie('cookieName', 'cookieValue', {
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  });
+  next();
+});
+
+app.use(rateLimiter);
 app.use(versionCheck);
 
 // Routes
