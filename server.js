@@ -34,11 +34,12 @@ try {
 // CORS configuration must come before other middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://feedio.app', 'https://www.feedio.app', 'https://feedio-staging.onrender.com']
+    ? ['https://feedio.app', 'https://www.feedio.app', 'https://feedio-staging.onrender.com', 'https://feedio-server.onrender.com']
     : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  exposedHeaders: ['Set-Cookie', 'Date', 'ETag'],
   optionsSuccessStatus: 200
 }));
 
@@ -67,13 +68,12 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // Add cookie parser with secure settings
 app.use(require('cookie-parser')());
 
-// Configure cookie settings
+// Configure global response headers for CORS
 app.use((req, res, next) => {
-  res.cookie('cookieName', 'cookieValue', {
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true
-  });
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
   next();
 });
 
