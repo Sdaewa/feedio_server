@@ -4,7 +4,7 @@ const User = require("../models/user");
 const paymentService = require("../services/paymentService");
 
 exports.createCheckoutSession = async (req, res) => {
-  const { id } = req.params;
+  const id = req.userData.userId;
   try {
     const session = await paymentService.createCheckoutSession(id);
     res.json({ id: session.id });
@@ -50,7 +50,7 @@ exports.handleStripeWebhook = async (req, res) => {
 };
 
 exports.cancelSubscription = async (req, res) => {
-  const { id } = req.params;
+  const id = req.userData.userId;
   try {
     console.log(`Received cancellation request for user ${id}`);
     await paymentService.cancelSubscription(id);
