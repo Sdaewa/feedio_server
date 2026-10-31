@@ -63,6 +63,18 @@ describe("requireProductOwner", () => {
   });
 });
 
+describe("when check-auth did not set req.userData", () => {
+  test.each([
+    ["product", requireProductOwner((req) => req.params.id)],
+    ["review", requireReviewOwner((req) => req.params.id)],
+    ["widget", requireWidgetOwner((req) => req.params.id)],
+  ])("%s middleware fails closed with 401", async (_name, mw) => {
+    const err = await run(mw, { params: { id: PRODUCT }, body: {}, query: {} });
+    expect(err.statusCode).toBe(401);
+    expect(Product.findById).not.toHaveBeenCalled();
+  });
+});
+
 describe("requireReviewOwner", () => {
   const mw = requireReviewOwner((req) => req.params.rid);
 

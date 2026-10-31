@@ -17,6 +17,16 @@ const assertValidId = (id, label) => {
   }
 };
 
+// Fail closed: if check-auth did not run (or let the request through), refuse
+// with 401 instead of crashing on a missing req.userData.
+const getUserId = (req) => {
+  const userId = req.userData && req.userData.userId;
+  if (!userId) {
+    throw new AppError(401, "Authentication required");
+  }
+  return userId;
+};
+
 // Throws unless the product exists and belongs to userId. Returns the product.
 const loadOwnedProduct = async (productId, userId) => {
   assertValidId(productId, "product");
@@ -33,7 +43,8 @@ const loadOwnedProduct = async (productId, userId) => {
 
 const requireProductOwner = (getProductId) => async (req, res, next) => {
   try {
-    req.product = await loadOwnedProduct(getProductId(req), req.userData.userId);
+    const userId = getUserId(req);
+    req.product = await loadOwnedProduct(getProductId(req), userId);
     next();
   } catch (error) {
     next(error);
@@ -42,6 +53,7 @@ const requireProductOwner = (getProductId) => async (req, res, next) => {
 
 const requireReviewOwner = (getReviewId) => async (req, res, next) => {
   try {
+    const userId = getUserId(req);
     const reviewId = getReviewId(req);
     assertValidId(reviewId, "review");
 
@@ -49,7 +61,7 @@ const requireReviewOwner = (getReviewId) => async (req, res, next) => {
     if (!review) {
       throw new AppError(404, "Review not found");
     }
-    req.product = await loadOwnedProduct(review.product, req.userData.userId);
+    req.product = await loadOwnedProduct(review.product, userId);
     next();
   } catch (error) {
     next(error);
@@ -58,6 +70,7 @@ const requireReviewOwner = (getReviewId) => async (req, res, next) => {
 
 const requireWidgetOwner = (getWidgetId) => async (req, res, next) => {
   try {
+    const userId = getUserId(req);
     const widgetId = getWidgetId(req);
     assertValidId(widgetId, "widget");
 
@@ -65,7 +78,7 @@ const requireWidgetOwner = (getWidgetId) => async (req, res, next) => {
     if (!widget) {
       throw new AppError(404, "Widget not found");
     }
-    req.product = await loadOwnedProduct(widget.product, req.userData.userId);
+    req.product = await loadOwnedProduct(widget.product, userId);
     next();
   } catch (error) {
     next(error);
