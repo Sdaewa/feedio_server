@@ -81,3 +81,45 @@ describe("webhook stays public", () => {
     expect(paymentService.handleStripeWebhook).not.toHaveBeenCalled();
   });
 });
+
+describe("no secrets in logs or responses", () => {
+  test("a failed webhook does not log the webhook secret or the signature", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+    await request(app)
+      .post("/api/payments/webhook")
+      .set("Content-Type", "application/json")
+      .set("stripe-signature", "t=1,v1=distinctive-bad-signature")
+      .send(JSON.stringify({ type: "checkout.session.completed" }));
+
+    const logged = JSON.stringify([...errorSpy.mock.calls, ...logSpy.mock.calls]);
+    expect(logged).not.toContain(process.env.STRIPE_WEBHOOK_SECRET);
+    expect(logged).not.toContain("distinctive-bad-signature");
+    errorSpy.mockRestore();
+    logSpy.mockRestore();
+  });
+
+  test("cancel-subscription returns only safe user fields and logs no user document", async () => {
+    const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+    paymentService.cancelSubscription.mockResolvedValue();
+    User.findById.mockResolvedValue({
+      email: "alice@example.com",
+      password: "$2a$12$hashhashhashhashhashhash",
+      stripeCustomerId: "cus_secret",
+      membershipStatus: "plus",
+      cancellationPending: true,
+    });
+
+    const res = await request(app).post("/api/payments/cancel-subscription").set(auth(ALICE));
+
+    expect(res.status).toBe(200);
+    expect(res.body.user).toEqual(
+      expect.objectContaining({ membershipStatus: "plus", cancellationPending: true })
+    );
+    expect(JSON.stringify(res.body)).not.toContain("hash");
+    expect(JSON.stringify(res.body)).not.toContain("cus_secret");
+    expect(JSON.stringify(logSpy.mock.calls)).not.toContain("hash");
+    logSpy.mockRestore();
+  });
+});

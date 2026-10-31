@@ -43,8 +43,6 @@ exports.handleStripeWebhook = async (req, res) => {
     res.json({ received: true });
   } catch (err) {
     console.error("Webhook Error:", err.message);
-    console.error("Stripe-Signature header:", sig);
-    console.error("Webhook Secret:", process.env.STRIPE_WEBHOOK_SECRET);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 };
@@ -56,12 +54,18 @@ exports.cancelSubscription = async (req, res) => {
     await paymentService.cancelSubscription(id);
     console.log(`Cancellation completed for user ${id}`);
 
+    // Send only what the client needs. The full user document contains the
+    // password hash and Stripe ids, and must never be logged or returned.
     const updatedUser = await User.findById(id);
-    console.log(`Updated user data:`, JSON.stringify(updatedUser, null, 2));
 
     res.json({
       message: "Subscription cancelled successfully",
-      user: updatedUser,
+      user: {
+        membershipStatus: updatedUser.membershipStatus,
+        cancellationPending: updatedUser.cancellationPending,
+        trialEndsAt: updatedUser.trialEndsAt,
+        membershipEndsAt: updatedUser.membershipEndsAt,
+      },
     });
   } catch (error) {
     console.error("Error in cancelSubscription controller:", error);
