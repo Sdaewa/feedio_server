@@ -1,6 +1,8 @@
 const express = require("express");
 const { check } = require("express-validator");
 const { validateRequest } = require("../middleware/validate-request");
+const checkAuth = require("../middleware/check-auth");
+const requireSelf = require("../middleware/require-self");
 const userService = require("../services/userService");
 
 const router = express.Router();
@@ -184,54 +186,6 @@ router.post(
 
 /**
  * @swagger
- * /api/users/search:
- *   get:
- *     tags:
- *       - Users
- *     summary: Search users
- *     description: Search users by email, name, or membership status
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: email
- *         schema:
- *           type: string
- *         description: Email to search for (partial match)
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Name to search for (partial match)
- *       - in: query
- *         name: membershipStatus
- *         schema:
- *           type: string
- *           enum: [free, trial, premium]
- *         description: Membership status to filter by
- *     responses:
- *       200:
- *         description: List of users matching the search criteria
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- */
-router.get("/search", async (req, res) => {
-  try {
-    const users = await userService.searchUsers(req.query);
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-/**
- * @swagger
  * /api/users/{id}:
  *   get:
  *     tags:
@@ -263,7 +217,7 @@ router.get("/search", async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/:id", userController.getUserById);
+router.get("/:id", checkAuth, requireSelf, userController.getUserById);
 
 /**
  * @swagger
@@ -308,6 +262,8 @@ router.get("/:id", userController.getUserById);
  */
 router.put(
   "/:id",
+  checkAuth,
+  requireSelf,
   validateRequest([
     check("name")
       .optional()
@@ -347,7 +303,7 @@ router.put(
  *       404:
  *         description: User not found
  */
-router.delete("/:id", userController.deleteUser);
+router.delete("/:id", checkAuth, requireSelf, userController.deleteUser);
 
 /**
  * @swagger
@@ -390,6 +346,6 @@ router.delete("/:id", userController.deleteUser);
  *       404:
  *         description: User not found
  */
-router.get("/:id/check-status", userController.checkUserStatus);
+router.get("/:id/check-status", checkAuth, requireSelf, userController.checkUserStatus);
 
 module.exports = router;
